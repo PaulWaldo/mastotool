@@ -3,16 +3,30 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"net/url"
 )
+
+type createApplicationClient struct {
+	Hostname      string
+	AppWebsiteURI string
+	Client        *http.Client
+}
+
+func NewCreateApplicationClient(hostname string) *createApplicationClient {
+	return &createApplicationClient{
+		Hostname: hostname,
+		Client:   &http.Client{},
+	}
+}
 
 type Config struct {
 	Hostname      string
 	AppWebsiteURI string
 }
 
-type applicationResponse struct {
+type CreateApplicationResponse struct {
 	ID           string `json:"id,omitempty"`
 	Name         string `json:"name,omitempty"`
 	Website      string `json:"website,omitempty"`
@@ -29,26 +43,32 @@ type applicationResponse struct {
 // 	-F 'website=https://myapp.example' \
 // 	https://mastodon.example/api/v1/apps
 
-func (c *Config) CreateApplication() error {
+func (c *createApplicationClient) CreateApplication() (*CreateApplicationResponse, error) {
 	uri := fmt.Sprintf("%s/api/v1/apps", c.Hostname)
-	resp, err := http.Post(uri, "application/json; charset=utf-8", bytes.NewBuffer(jsonReq))
+	data := url.Values{
+		"client_name":   {"Test Application"},
+		"redirect_uris": {"urn:ietf:wg:oauth:2.0:oob"},
+		"scopes":        {"read write push"},
+		"website":       {"https://myapp.example"},
+	}
+	resp, err := c.Client.PostForm(uri, data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Got %d calling apps endpoint: %s", resp.StatusCode, resp.Status)
+		return nil, fmt.Errorf("Got %d calling apps endpoint: %s", resp.StatusCode, resp.Status)
 	}
 	defer resp.Body.Close()
-	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	bodyBytes, _ := io.ReadAll(resp.Body)
 
 	bodyString := string(bodyBytes)
 	fmt.Println("API Response as String:\n" + bodyString)
 
-	var applicationResponse applicationResponse
+	var applicationResponse CreateApplicationResponse
 	err = json.Unmarshal(bodyBytes, &applicationResponse)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	fmt.Printf("API Response as struct %+v\n", applicationResponse)
-	return nil
+	return &applicationResponse, nil
 }
