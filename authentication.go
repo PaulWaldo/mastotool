@@ -1,4 +1,43 @@
 package mastotool
+
+import (
+	"context"
+	"fmt"
+	"net/url"
+
+	"github.com/mattn/go-mastodon"
+)
+
+const (
+	clientName = "Mastotool"
+	website    = "https://github.com/PaulWaldo/mastotool"
+)
+
+func NewAuthenticationConfig(server string) *mastodon.AppConfig {
+	return &mastodon.AppConfig{
+		Server:       server,
+		ClientName:   clientName,
+		Scopes:       "read write follow",
+		Website:      website,
+		RedirectURIs: "urn:ietf:wg:oauth:2.0:oob",
+	}
+}
+func AuthenticationURL(appConfig *mastodon.AppConfig) (*url.URL, error) {
+	app, err := mastodon.RegisterApp(context.Background(), appConfig)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("client-id    : %s\n", app.ClientID)
+	fmt.Printf("client-secret: %s\n", app.ClientSecret)
+	fmt.Printf("Auth URL: %s\n", app.AuthURI)
+
+	u, err := url.Parse(app.AuthURI)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
 // package main
 
 // import (

@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "MastoTool",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/mastotool/main.go"
+        },
+        {
             "name": "Launch Package",
             "type": "go",
             "request": "launch",
