@@ -1,4 +1,5 @@
 package mastotool
+
 // package main
 
 // // func Test_aa(t *testing.T) {
