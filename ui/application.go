@@ -33,6 +33,7 @@ func Run() {
 		fyne.NewMenu("File",
 			fyne.NewMenuItem("Authenticate", func() {
 				serverUrlEntry := widget.NewEntryWithData(prefs.MastodonServer)
+				serverUrlEntry.Validator = nil
 				serverUrlEntry.SetPlaceHolder("https://mymastodonserver.com")
 				form := dialog.NewForm("Mastodon Server", "Authenticate", "Abort", []*widget.FormItem{
 					{Text: "Server", Widget: serverUrlEntry, HintText: "URL of your Mastodon server"},
@@ -42,7 +43,7 @@ func Run() {
 						fmt.Printf("Server is %s\n", val)
 					}
 				}, w)
-				// form.Resize(fyne.Size{Width: 300, Height: 300})
+				form.Resize(fyne.Size{Width: 300, Height: 300})
 				form.Show()
 			}),
 		),
