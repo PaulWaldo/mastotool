@@ -22,6 +22,7 @@ func NewAuthenticationConfig(server string) *mastodon.AppConfig {
 		RedirectURIs: "urn:ietf:wg:oauth:2.0:oob",
 	}
 }
+
 func AuthenticationURL(appConfig *mastodon.AppConfig) (*url.URL, error) {
 	app, err := mastodon.RegisterApp(context.Background(), appConfig)
 	if err != nil {
