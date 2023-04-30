@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/PaulWaldo/mastotool"
 	"github.com/mattn/go-mastodon"
 )
 
@@ -31,10 +32,13 @@ type myApp struct {
 	mastodonClient *mastodon.Client
 	followedTags   []*mastodon.FollowedTag
 	keepTags       binding.ExternalIntList
+	removeTags     binding.ExternalIntList
 }
 
 func (ma *myApp) makeFollowedTagsUI() *fyne.Container {
-	l := widget.NewListWithData(ma.keepTags,
+	ma.keepTags = binding.BindIntList(&[]int{})
+	ma.removeTags = binding.BindIntList(&[]int{})
+	keep := widget.NewListWithData(ma.keepTags,
 		func() fyne.CanvasObject {
 			return widget.NewLabel("template")
 		},
@@ -42,16 +46,31 @@ func (ma *myApp) makeFollowedTagsUI() *fyne.Container {
 			o.(*widget.Label).Bind(i.(binding.String))
 		},
 	)
-	return container.New(layout.NewHBoxLayout(), l)
+	remove := widget.NewListWithData(ma.removeTags,
+		func() fyne.CanvasObject {
+			return widget.NewLabel("template")
+		},
+		func(i binding.DataItem, o fyne.CanvasObject) {
+			o.(*widget.Label).Bind(i.(binding.String))
+		},
+	)
+	return container.New(layout.NewHBoxLayout(), keep, remove)
 
 }
 
-func setFollowedTags() {
-	followedTags, err := mastodonClient.GetFollowedTags(context.Background(), nil)
+func (ma *myApp) getFollowedTags() error {
+	var err error
+	ma.followedTags, err = ma.mastodonClient.GetFollowedTags(context.Background(), nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	binding.BindIntList()
+	keepIndex := make([]int, len(ma.followedTags))
+	for i := 0; i < len(ma.followedTags); i++ {
+		keepIndex[i] = i
+	}
+	ma.keepTags = binding.BindIntList(&keepIndex)
+	ma.removeTags = binding.BindIntList(&[]int{})
+	return nil
 }
 
 func Run() {
@@ -81,6 +100,16 @@ func Run() {
 					if b {
 						val, _ := prefs.MastodonServer.Get()
 						fmt.Printf("Server is %s\n", val)
+						u, err := mastotool.AuthenticationURL(mastotool.NewAuthenticationConfig(val))
+						if err != nil {
+							dialog.NewError(err, w).Show()
+							return
+						}
+						err = a.OpenURL(u)
+						if err != nil {
+							dialog.NewError(err, w).Show()
+							return
+						}
 					}
 				}, w)
 				form.Resize(fyne.Size{Width: 300, Height: 300})
@@ -89,6 +118,10 @@ func Run() {
 		),
 	))
 	w.SetContent(myApp.makeFollowedTagsUI())
+	err := myApp.getFollowedTags()
+	if err != nil {
+		dialog.NewError(err, w).Show()
+	}
 	w.Resize(fyne.Size{Width: 400, Height: 400})
 	w.ShowAndRun()
 }

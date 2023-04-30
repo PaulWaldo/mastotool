@@ -1,3 +1,3 @@
 package mastotool
 
-// func 
+// func
