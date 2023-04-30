@@ -3,7 +3,6 @@ package ui
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -27,21 +26,20 @@ const (
 	APIKeyKey = "APIKey"
 )
 
-var (
+type myApp struct {
 	mastodonConfig *mastodon.Config
 	mastodonClient *mastodon.Client
-	followedTags []*mastodon.FollowedTag
-)
+	followedTags   []*mastodon.FollowedTag
+	keepTags       binding.ExternalIntList
+}
 
-func makeFollowedTagsUI() *fyne.Container {
-	l := widget.NewList(func() int {
-		return len(followedTags)
-	},
+func (ma *myApp) makeFollowedTagsUI() *fyne.Container {
+	l := widget.NewListWithData(ma.keepTags,
 		func() fyne.CanvasObject {
 			return widget.NewLabel("template")
 		},
-		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*widget.Label).SetText(followedTags[i].Name)
+		func(i binding.DataItem, o fyne.CanvasObject) {
+			o.(*widget.Label).Bind(i.(binding.String))
 		},
 	)
 	return container.New(layout.NewHBoxLayout(), l)
@@ -49,10 +47,11 @@ func makeFollowedTagsUI() *fyne.Container {
 }
 
 func setFollowedTags() {
-	ft, err := mastodonClient.GetFollowedTags(context.Background(), nil)
+	followedTags, err := mastodonClient.GetFollowedTags(context.Background(), nil)
 	if err != nil {
 		return nil, err
 	}
+	binding.BindIntList()
 }
 
 func Run() {
@@ -66,8 +65,9 @@ func Run() {
 	server, _ := prefs.MastodonServer.Get()
 	clientID, _ := prefs.ClientID.Get()
 	clientSecret, _ := prefs.ClientSecret.Get()
-	mastodonConfig = &mastodon.Config{Server: server, ClientID: clientID, ClientSecret: clientSecret}
-	mastodonClient = mastodon.NewClient(mastodonConfig)
+	mastodonConfig := &mastodon.Config{Server: server, ClientID: clientID, ClientSecret: clientSecret}
+	mastodonClient := mastodon.NewClient(mastodonConfig)
+	myApp := &myApp{mastodonConfig: mastodonConfig, mastodonClient: mastodonClient}
 	w := a.NewWindow("MastoTool")
 	w.SetMainMenu(fyne.NewMainMenu(
 		fyne.NewMenu("File",
@@ -88,11 +88,7 @@ func Run() {
 			}),
 		),
 	))
-	ftui, err := makeFollowedTagsUI()
-	if err != nil {
-		log.Fatalf("getting followed tags ui: %w", err)
-	}
-	w.SetContent(ftui)
+	w.SetContent(myApp.makeFollowedTagsUI())
 	w.Resize(fyne.Size{Width: 400, Height: 400})
 	w.ShowAndRun()
 }
