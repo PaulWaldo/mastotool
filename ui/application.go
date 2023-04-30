@@ -1,18 +1,25 @@
 package ui
 
 import (
+	"context"
 	"fmt"
+	"log"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/mattn/go-mastodon"
 )
 
 type preferences struct {
 	MastodonServer binding.String
-	APIKey         binding.String
+	// APIKey         binding.String
+	ClientID     binding.String
+	ClientSecret binding.String
 }
 
 const (
@@ -20,14 +27,47 @@ const (
 	APIKeyKey = "APIKey"
 )
 
+var (
+	mastodonConfig *mastodon.Config
+	mastodonClient *mastodon.Client
+	followedTags []*mastodon.FollowedTag
+)
+
+func makeFollowedTagsUI() *fyne.Container {
+	l := widget.NewList(func() int {
+		return len(followedTags)
+	},
+		func() fyne.CanvasObject {
+			return widget.NewLabel("template")
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			o.(*widget.Label).SetText(followedTags[i].Name)
+		},
+	)
+	return container.New(layout.NewHBoxLayout(), l)
+
+}
+
+func setFollowedTags() {
+	ft, err := mastodonClient.GetFollowedTags(context.Background(), nil)
+	if err != nil {
+		return nil, err
+	}
+}
+
 func Run() {
 	a := app.NewWithID("com.github.PaulWaldo.mastotool")
 	prefs := preferences{
 		MastodonServer: binding.BindPreferenceString("MastodonServer", a.Preferences()),
-		APIKey:         binding.BindPreferenceString(APIKeyKey, a.Preferences()),
+		ClientID:       binding.BindPreferenceString("ClientID", a.Preferences()),
+		ClientSecret:   binding.BindPreferenceString("ClientSecret", a.Preferences()),
+		// APIKey:         binding.BindPreferenceString(APIKeyKey, a.Preferences()),
 	}
-	val, _ := prefs.MastodonServer.Get()
-	fmt.Printf("Server is %s\n", val)
+	server, _ := prefs.MastodonServer.Get()
+	clientID, _ := prefs.ClientID.Get()
+	clientSecret, _ := prefs.ClientSecret.Get()
+	mastodonConfig = &mastodon.Config{Server: server, ClientID: clientID, ClientSecret: clientSecret}
+	mastodonClient = mastodon.NewClient(mastodonConfig)
 	w := a.NewWindow("MastoTool")
 	w.SetMainMenu(fyne.NewMainMenu(
 		fyne.NewMenu("File",
@@ -48,6 +88,11 @@ func Run() {
 			}),
 		),
 	))
+	ftui, err := makeFollowedTagsUI()
+	if err != nil {
+		log.Fatalf("getting followed tags ui: %w", err)
+	}
+	w.SetContent(ftui)
 	w.Resize(fyne.Size{Width: 400, Height: 400})
 	w.ShowAndRun()
 }

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/mattn/go-mastodon"
+	"github.com/stretchr/testify/assert"
 )
 
 // package main
@@ -121,4 +122,11 @@ func TestAuthenticationURL(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNewAuthenticationConfig(t *testing.T) {
+	server := "https://myserver"
+	got := NewAuthenticationConfig(server)
+	assert.Equal(t, server, got.Server, "Expecting server to be %s, but got %s", server, got.Server)
+	assert.Equal(t, website, got.Website, "Expecting website to be %s, but got %s", website, got.Website)
 }

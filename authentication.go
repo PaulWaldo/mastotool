@@ -2,7 +2,6 @@ package mastotool
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 
 	"github.com/mattn/go-mastodon"
@@ -28,9 +27,6 @@ func AuthenticationURL(appConfig *mastodon.AppConfig) (*url.URL, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("client-id    : %s\n", app.ClientID)
-	fmt.Printf("client-secret: %s\n", app.ClientSecret)
-	fmt.Printf("Auth URL: %s\n", app.AuthURI)
 
 	u, err := url.Parse(app.AuthURI)
 	if err != nil {
