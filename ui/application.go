@@ -3,6 +3,7 @@ package ui
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -17,6 +18,7 @@ import (
 
 type preferences struct {
 	MastodonServer binding.String
+	AuthCode       binding.String
 	// APIKey         binding.String
 	ClientID     binding.String
 	ClientSecret binding.String
@@ -28,11 +30,12 @@ const (
 )
 
 type myApp struct {
-	mastodonConfig *mastodon.Config
-	mastodonClient *mastodon.Client
-	followedTags   []*mastodon.FollowedTag
-	keepTags       binding.ExternalIntList
-	removeTags     binding.ExternalIntList
+	mastodonConfig    *mastodon.Config
+	mastodonClient    *mastodon.Client
+	authorizationCode string
+	followedTags      []*mastodon.FollowedTag
+	keepTags          binding.ExternalIntList
+	removeTags        binding.ExternalIntList
 }
 
 func (ma *myApp) makeFollowedTagsUI() *fyne.Container {
@@ -77,6 +80,7 @@ func Run() {
 	a := app.NewWithID("com.github.PaulWaldo.mastotool")
 	prefs := preferences{
 		MastodonServer: binding.BindPreferenceString("MastodonServer", a.Preferences()),
+		AuthCode:       binding.BindPreferenceString("AuthorizationCode", a.Preferences()),
 		ClientID:       binding.BindPreferenceString("ClientID", a.Preferences()),
 		ClientSecret:   binding.BindPreferenceString("ClientSecret", a.Preferences()),
 		// APIKey:         binding.BindPreferenceString(APIKeyKey, a.Preferences()),
@@ -84,7 +88,8 @@ func Run() {
 	server, _ := prefs.MastodonServer.Get()
 	clientID, _ := prefs.ClientID.Get()
 	clientSecret, _ := prefs.ClientSecret.Get()
-	mastodonConfig := &mastodon.Config{Server: server, ClientID: clientID, ClientSecret: clientSecret}
+	authToken, _ := prefs.AuthCode.Get()
+	mastodonConfig := &mastodon.Config{Server: server, AccessToken: authToken, ClientID: clientID, ClientSecret: clientSecret}
 	mastodonClient := mastodon.NewClient(mastodonConfig)
 	myApp := &myApp{mastodonConfig: mastodonConfig, mastodonClient: mastodonClient}
 	w := a.NewWindow("MastoTool")
@@ -100,7 +105,18 @@ func Run() {
 					if b {
 						val, _ := prefs.MastodonServer.Get()
 						fmt.Printf("Server is %s\n", val)
-						u, err := mastotool.AuthenticationURL(mastotool.NewAuthenticationConfig(val))
+						// app, err := mastodon.RegisterApp(context.Background(), appConfig)
+						app, err := mastodon.RegisterApp(context.Background(), mastotool.NewAuthenticationConfig(val))
+						// u, err := mastotool.AuthenticationURL(mastotool.NewAuthenticationConfig(val))
+						if err != nil {
+							dialog.NewError(err, w).Show()
+							return
+						}
+						prefs.ClientID.Set(app.ClientID)
+						myApp.mastodonConfig.ClientID = app.ClientID
+						prefs.ClientSecret.Set(app.ClientSecret)
+						myApp.mastodonConfig.ClientSecret = app.ClientSecret
+						u, err := url.Parse(app.AuthURI)
 						if err != nil {
 							dialog.NewError(err, w).Show()
 							return
@@ -110,6 +126,22 @@ func Run() {
 							dialog.NewError(err, w).Show()
 							return
 						}
+						authCodeEntry := widget.NewEntryWithData(prefs.AuthCode)
+						dialog.NewForm("Authorization Code", "Save", "Cancel", []*widget.FormItem{
+							{
+								Text:     "Authorization Code",
+								Widget:   authCodeEntry,
+								HintText: "XXXXXXXXXXXXXXX",
+							}},
+							func(b bool) {
+								if b {
+									val, _ := prefs.AuthCode.Get()
+									fmt.Printf("auth code is %s", val)
+									myApp.authorizationCode = val
+									myApp.mastodonConfig.AccessToken = val
+								}
+							},
+							w).Show()
 					}
 				}, w)
 				form.Resize(fyne.Size{Width: 300, Height: 300})
