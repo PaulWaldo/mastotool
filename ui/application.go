@@ -63,11 +63,13 @@ func (ma *myApp) makeFollowedTagsUI() *fyne.Container {
 
 func (ma *myApp) getFollowedTags() error {
 	var err error
+	fmt.Printf("Getting followed tags, client is \n%+v\n", ma.mastodonClient.Config)
 	ma.followedTags, err = ma.mastodonClient.GetFollowedTags(context.Background(), nil)
 	if err != nil {
 		return err
 	}
 	keepIndex := make([]int, len(ma.followedTags))
+	fmt.Printf("Got %d followed tags\n", len(ma.followedTags))
 	for i := 0; i < len(ma.followedTags); i++ {
 		keepIndex[i] = i
 	}
@@ -107,6 +109,7 @@ func Run() {
 						fmt.Printf("Server is %s\n", val)
 						// app, err := mastodon.RegisterApp(context.Background(), appConfig)
 						app, err := mastodon.RegisterApp(context.Background(), mastotool.NewAuthenticationConfig(val))
+						fmt.Printf("Got token %+v\n", app)
 						// u, err := mastotool.AuthenticationURL(mastotool.NewAuthenticationConfig(val))
 						if err != nil {
 							dialog.NewError(err, w).Show()
@@ -124,9 +127,11 @@ func Run() {
 						err = a.OpenURL(u)
 						if err != nil {
 							dialog.NewError(err, w).Show()
+							fyne.LogError("Calling URL.open", err)
 							return
 						}
 						authCodeEntry := widget.NewEntryWithData(prefs.AuthCode)
+						authCodeEntry.Validator = nil
 						dialog.NewForm("Authorization Code", "Save", "Cancel", []*widget.FormItem{
 							{
 								Text:     "Authorization Code",
@@ -136,9 +141,23 @@ func Run() {
 							func(b bool) {
 								if b {
 									val, _ := prefs.AuthCode.Get()
-									fmt.Printf("auth code is %s", val)
 									myApp.authorizationCode = val
 									myApp.mastodonConfig.AccessToken = val
+									fmt.Printf("After authorizing, client is \n%+v\n", myApp.mastodonConfig)
+									myApp.mastodonClient = mastodon.NewClient(myApp.mastodonConfig)
+									// c := mastodon.NewClient(myApp.mastodonConfig)
+									err = myApp.mastodonClient.AuthenticateToken(context.Background(), myApp.authorizationCode, "urn:ietf:wg:oauth:2.0:oob")
+									if err != nil {
+										dialog.NewError(err, w).Show()
+										fyne.LogError("Authenticating token", err)
+										return
+									}
+									err = myApp.getFollowedTags()
+									if err != nil {
+										dialog.NewError(err, w).Show()
+										fyne.LogError("Getting followed tags after auth", err)
+										return
+									}
 								}
 							},
 							w).Show()
@@ -149,11 +168,12 @@ func Run() {
 			}),
 		),
 	))
-	w.SetContent(myApp.makeFollowedTagsUI())
 	err := myApp.getFollowedTags()
 	if err != nil {
 		dialog.NewError(err, w).Show()
+		fyne.LogError("In main, getting followed tags", err)
 	}
+	w.SetContent(myApp.makeFollowedTagsUI())
 	w.Resize(fyne.Size{Width: 400, Height: 400})
 	w.ShowAndRun()
 }
