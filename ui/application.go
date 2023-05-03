@@ -18,10 +18,9 @@ import (
 
 type preferences struct {
 	MastodonServer binding.String
-	AuthCode       binding.String
-	// APIKey         binding.String
-	ClientID     binding.String
-	ClientSecret binding.String
+	AccessToken    binding.String
+	ClientID       binding.String
+	ClientSecret   binding.String
 }
 
 const (
@@ -30,12 +29,10 @@ const (
 )
 
 type myApp struct {
-	mastodonConfig    *mastodon.Config
-	mastodonClient    *mastodon.Client
-	authorizationCode string
-	followedTags      []*mastodon.FollowedTag
-	keepTags          binding.ExternalIntList
-	removeTags        binding.ExternalIntList
+	followedTags []*mastodon.FollowedTag
+	keepTags     binding.ExternalIntList
+	removeTags   binding.ExternalIntList
+	prefs        preferences
 }
 
 func (ma *myApp) makeFollowedTagsUI() *fyne.Container {
@@ -63,8 +60,9 @@ func (ma *myApp) makeFollowedTagsUI() *fyne.Container {
 
 func (ma *myApp) getFollowedTags() error {
 	var err error
-	fmt.Printf("Getting followed tags, client is \n%+v\n", ma.mastodonClient.Config)
-	ma.followedTags, err = ma.mastodonClient.GetFollowedTags(context.Background(), nil)
+	c := NewClientFromPrefs(ma.prefs)
+	fmt.Printf("Getting followed tags, client is \n%+v\n", c.Config)
+	ma.followedTags, err = c.GetFollowedTags(context.Background(), nil)
 	if err != nil {
 		return err
 	}
@@ -78,22 +76,29 @@ func (ma *myApp) getFollowedTags() error {
 	return nil
 }
 
+func NewClientFromPrefs(p preferences) *mastodon.Client {
+	server, _ := p.MastodonServer.Get()
+	clientID, _ := p.ClientID.Get()
+	clientSecret, _ := p.ClientSecret.Get()
+	accessToken, _ := p.AccessToken.Get()
+	conf := &mastodon.Config{
+		Server:       server,
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		AccessToken:  accessToken,
+	}
+	return mastodon.NewClient(conf)
+}
+
 func Run() {
 	a := app.NewWithID("com.github.PaulWaldo.mastotool")
 	prefs := preferences{
 		MastodonServer: binding.BindPreferenceString("MastodonServer", a.Preferences()),
-		AuthCode:       binding.BindPreferenceString("AuthorizationCode", a.Preferences()),
+		AccessToken:    binding.BindPreferenceString("AcessToken", a.Preferences()),
 		ClientID:       binding.BindPreferenceString("ClientID", a.Preferences()),
 		ClientSecret:   binding.BindPreferenceString("ClientSecret", a.Preferences()),
-		// APIKey:         binding.BindPreferenceString(APIKeyKey, a.Preferences()),
 	}
-	server, _ := prefs.MastodonServer.Get()
-	clientID, _ := prefs.ClientID.Get()
-	clientSecret, _ := prefs.ClientSecret.Get()
-	authToken, _ := prefs.AuthCode.Get()
-	mastodonConfig := &mastodon.Config{Server: server, AccessToken: authToken, ClientID: clientID, ClientSecret: clientSecret}
-	mastodonClient := mastodon.NewClient(mastodonConfig)
-	myApp := &myApp{mastodonConfig: mastodonConfig, mastodonClient: mastodonClient}
+	myApp := &myApp{prefs: prefs}
 	w := a.NewWindow("MastoTool")
 	w.SetMainMenu(fyne.NewMainMenu(
 		fyne.NewMenu("File",
@@ -107,18 +112,14 @@ func Run() {
 					if b {
 						val, _ := prefs.MastodonServer.Get()
 						fmt.Printf("Server is %s\n", val)
-						// app, err := mastodon.RegisterApp(context.Background(), appConfig)
 						app, err := mastodon.RegisterApp(context.Background(), mastotool.NewAuthenticationConfig(val))
 						fmt.Printf("Got token %+v\n", app)
-						// u, err := mastotool.AuthenticationURL(mastotool.NewAuthenticationConfig(val))
 						if err != nil {
 							dialog.NewError(err, w).Show()
 							return
 						}
-						prefs.ClientID.Set(app.ClientID)
-						myApp.mastodonConfig.ClientID = app.ClientID
-						prefs.ClientSecret.Set(app.ClientSecret)
-						myApp.mastodonConfig.ClientSecret = app.ClientSecret
+						_ = prefs.ClientID.Set(app.ClientID)
+						_ = prefs.ClientSecret.Set(app.ClientSecret)
 						u, err := url.Parse(app.AuthURI)
 						if err != nil {
 							dialog.NewError(err, w).Show()
@@ -130,23 +131,20 @@ func Run() {
 							fyne.LogError("Calling URL.open", err)
 							return
 						}
-						authCodeEntry := widget.NewEntryWithData(prefs.AuthCode)
-						authCodeEntry.Validator = nil
+						AccessTokenEntry := widget.NewEntryWithData(prefs.AccessToken)
+						AccessTokenEntry.Validator = nil
 						dialog.NewForm("Authorization Code", "Save", "Cancel", []*widget.FormItem{
 							{
 								Text:     "Authorization Code",
-								Widget:   authCodeEntry,
+								Widget:   AccessTokenEntry,
 								HintText: "XXXXXXXXXXXXXXX",
 							}},
 							func(b bool) {
 								if b {
-									val, _ := prefs.AuthCode.Get()
-									myApp.authorizationCode = val
-									myApp.mastodonConfig.AccessToken = val
-									fmt.Printf("After authorizing, client is \n%+v\n", myApp.mastodonConfig)
-									myApp.mastodonClient = mastodon.NewClient(myApp.mastodonConfig)
-									// c := mastodon.NewClient(myApp.mastodonConfig)
-									err = myApp.mastodonClient.AuthenticateToken(context.Background(), myApp.authorizationCode, "urn:ietf:wg:oauth:2.0:oob")
+									c := NewClientFromPrefs(myApp.prefs)
+									fmt.Printf("After authorizing, client is \n%+v\n", c.Config)
+									at, _ := myApp.prefs.AccessToken.Get()
+									err = c.AuthenticateToken(context.Background(), at, "urn:ietf:wg:oauth:2.0:oob")
 									if err != nil {
 										dialog.NewError(err, w).Show()
 										fyne.LogError("Authenticating token", err)
@@ -168,7 +166,14 @@ func Run() {
 			}),
 		),
 	))
-	err := myApp.getFollowedTags()
+	at, _ := myApp.prefs.AccessToken.Get()
+	c := NewClientFromPrefs(myApp.prefs)
+	err := c.AuthenticateToken(context.Background(), at, "urn:ietf:wg:oauth:2.0:oob")
+	if err != nil {
+		dialog.NewError(err, w).Show()
+		fyne.LogError("In main, Authenticating token", err)
+	}
+	err = myApp.getFollowedTags()
 	if err != nil {
 		dialog.NewError(err, w).Show()
 		fyne.LogError("In main, getting followed tags", err)
