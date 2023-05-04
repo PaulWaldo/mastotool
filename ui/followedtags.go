@@ -3,59 +3,51 @@ package ui
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 	"github.com/mattn/go-mastodon"
 )
 
 type FollowedTagsUI struct {
-	KeepTags     binding.IntList
-	RemoveTags   binding.IntList
-	followedTags []*mastodon.FollowedTag
+	KeepTags     []*mastodon.FollowedTag
+	RemoveTags   []*mastodon.FollowedTag
 	container    *fyne.Container
 }
 
 func NewFollowedTagsUI() *FollowedTagsUI {
 	return &FollowedTagsUI{
-		KeepTags:   binding.BindIntList(&[]int{}),
-		RemoveTags: binding.BindIntList(&[]int{}),
+		KeepTags:   []*mastodon.FollowedTag{},
+		RemoveTags: []*mastodon.FollowedTag{},
 	}
 }
 
 func (ui *FollowedTagsUI) SetFollowedTags(ft []*mastodon.FollowedTag) {
-	keepIDs := make([]int, len(ft))
-	for i := 0; i < len(ft); i++ {
-		keepIDs[i] = i
-	}
-	var err error
-	err = ui.RemoveTags.Set([]int{})
-	if err != nil {
-		fyne.LogError("Setting RemoveTags: ", err)
-	}
-	err = ui.KeepTags.Set(keepIDs)
-	if err != nil {
-		fyne.LogError("Setting KeepTags: ", err)
-	}
+	ui.KeepTags = make([]*mastodon.FollowedTag, len(ft))
+	copy(ui.KeepTags, ft)
 }
 
 func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
-	keepList := widget.NewListWithData(ui.KeepTags,
+	keepList := widget.NewList(
+		func() int {
+			return len(ui.KeepTags)
+		},
 		func() fyne.CanvasObject {
 			return widget.NewLabel("template")
 		},
-		func(i binding.DataItem, o fyne.CanvasObject) {
-			o.(*widget.Label).Bind(binding.IntToString(i.(binding.Int)))
-		},
-	)
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			o.(*widget.Label).SetText(ui.KeepTags[i].Name)
+		})
 	keepLabel := widget.NewLabel("Tags to keep")
-	removeList := widget.NewListWithData(ui.RemoveTags,
+
+	removeList := widget.NewList(
+		func() int {
+			return len(ui.RemoveTags)
+		},
 		func() fyne.CanvasObject {
 			return widget.NewLabel("template")
 		},
-		func(i binding.DataItem, o fyne.CanvasObject) {
-			o.(*widget.Label).Bind(binding.IntToString(i.(binding.Int)))
-		},
-	)
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			o.(*widget.Label).SetText(ui.RemoveTags[i].Name)
+		})
 	removeLabel := widget.NewLabel("Tags to remove")
 
 	keepBox := container.NewBorder(keepLabel, nil, nil, nil, keepList)
