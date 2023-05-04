@@ -67,10 +67,12 @@ func (ma *myApp) getFollowedTags() error {
 		return err
 	}
 	keepIndex := make([]int, len(ma.followedTags))
-	fmt.Printf("Got %d followed tags\n", len(ma.followedTags))
+	fmt.Printf("Got %d followed tags: ", len(ma.followedTags))
 	for i := 0; i < len(ma.followedTags); i++ {
 		keepIndex[i] = i
+		fmt.Printf("%s, ", ma.followedTags[i].Name)
 	}
+	fmt.Println("")
 	ma.keepTags = binding.BindIntList(&keepIndex)
 	ma.removeTags = binding.BindIntList(&[]int{})
 	return nil
@@ -88,6 +90,39 @@ func NewClientFromPrefs(p preferences) *mastodon.Client {
 		AccessToken:  accessToken,
 	}
 	return mastodon.NewClient(conf)
+}
+
+var authURI *url.URL
+
+func (ma *myApp) getAuthCode(w fyne.Window) {
+	accessTokenEntry := widget.NewEntry()
+	accessTokenEntry.Validator = nil
+	dialog.NewForm("Authorization Code", "Save", "Cancel", []*widget.FormItem{
+		{
+			Text:     "Authorization Code",
+			Widget:   accessTokenEntry,
+			HintText: "XXXXXXXXXXXXXXX",
+		}},
+		func(b bool) {
+			if b {
+				c := NewClientFromPrefs(ma.prefs)
+				fmt.Printf("After authorizing, client is \n%+v\n", c.Config)
+				err := c.AuthenticateToken(context.Background(), accessTokenEntry.Text, "urn:ietf:wg:oauth:2.0:oob")
+				if err != nil {
+					dialog.NewError(err, w).Show()
+					fyne.LogError("Authenticating token", err)
+					return
+				}
+				_ = ma.prefs.AccessToken.Set(c.Config.AccessToken)
+				err = ma.getFollowedTags()
+				if err != nil {
+					dialog.NewError(err, w).Show()
+					fyne.LogError("Getting followed tags after auth", err)
+					return
+				}
+			}
+		},
+		w).Show()
 }
 
 func Run() {
@@ -120,45 +155,24 @@ func Run() {
 						}
 						_ = prefs.ClientID.Set(app.ClientID)
 						_ = prefs.ClientSecret.Set(app.ClientSecret)
-						u, err := url.Parse(app.AuthURI)
+						authURI, err = url.Parse(app.AuthURI)
 						if err != nil {
 							dialog.NewError(err, w).Show()
 							return
 						}
-						err = a.OpenURL(u)
+						err = a.OpenURL(authURI)
 						if err != nil {
 							dialog.NewError(err, w).Show()
-							fyne.LogError("Calling URL.open", err)
+							fyne.LogError(fmt.Sprintf("Calling URL.open on '%s'", authURI), err)
 							return
 						}
-						AccessTokenEntry := widget.NewEntryWithData(prefs.AccessToken)
-						AccessTokenEntry.Validator = nil
-						dialog.NewForm("Authorization Code", "Save", "Cancel", []*widget.FormItem{
-							{
-								Text:     "Authorization Code",
-								Widget:   AccessTokenEntry,
-								HintText: "XXXXXXXXXXXXXXX",
-							}},
-							func(b bool) {
-								if b {
-									c := NewClientFromPrefs(myApp.prefs)
-									fmt.Printf("After authorizing, client is \n%+v\n", c.Config)
-									at, _ := myApp.prefs.AccessToken.Get()
-									err = c.AuthenticateToken(context.Background(), at, "urn:ietf:wg:oauth:2.0:oob")
-									if err != nil {
-										dialog.NewError(err, w).Show()
-										fyne.LogError("Authenticating token", err)
-										return
-									}
-									err = myApp.getFollowedTags()
-									if err != nil {
-										dialog.NewError(err, w).Show()
-										fyne.LogError("Getting followed tags after auth", err)
-										return
-									}
-								}
-							},
-							w).Show()
+						myApp.getAuthCode(w)
+						c := NewClientFromPrefs(myApp.prefs)
+						_, err = c.VerifyAppCredentials(context.Background())
+						if err != nil {
+							dialog.NewError(err, w).Show()
+							fyne.LogError("In Authenticate menu, Authenticating token", err)
+						}
 					}
 				}, w)
 				form.Resize(fyne.Size{Width: 300, Height: 300})
@@ -166,9 +180,8 @@ func Run() {
 			}),
 		),
 	))
-	at, _ := myApp.prefs.AccessToken.Get()
 	c := NewClientFromPrefs(myApp.prefs)
-	err := c.AuthenticateToken(context.Background(), at, "urn:ietf:wg:oauth:2.0:oob")
+	_, err := c.VerifyAppCredentials(context.Background())
 	if err != nil {
 		dialog.NewError(err, w).Show()
 		fyne.LogError("In main, Authenticating token", err)
