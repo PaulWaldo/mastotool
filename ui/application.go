@@ -7,10 +7,8 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/PaulWaldo/mastotool"
 	"github.com/mattn/go-mastodon"
@@ -33,29 +31,7 @@ type myApp struct {
 	keepTags     binding.ExternalIntList
 	removeTags   binding.ExternalIntList
 	prefs        preferences
-}
-
-func (ma *myApp) makeFollowedTagsUI() *fyne.Container {
-	ma.keepTags = binding.BindIntList(&[]int{})
-	ma.removeTags = binding.BindIntList(&[]int{})
-	keep := widget.NewListWithData(ma.keepTags,
-		func() fyne.CanvasObject {
-			return widget.NewLabel("template")
-		},
-		func(i binding.DataItem, o fyne.CanvasObject) {
-			o.(*widget.Label).Bind(i.(binding.String))
-		},
-	)
-	remove := widget.NewListWithData(ma.removeTags,
-		func() fyne.CanvasObject {
-			return widget.NewLabel("template")
-		},
-		func(i binding.DataItem, o fyne.CanvasObject) {
-			o.(*widget.Label).Bind(i.(binding.String))
-		},
-	)
-	return container.New(layout.NewHBoxLayout(), keep, remove)
-
+	ftui         FollowedTagsUI
 }
 
 func (ma *myApp) getFollowedTags() error {
@@ -191,7 +167,11 @@ func Run() {
 		dialog.NewError(err, w).Show()
 		fyne.LogError("In main, getting followed tags", err)
 	}
-	w.SetContent(myApp.makeFollowedTagsUI())
+
+	myApp.ftui = *NewFollowedTagsUI()
+	myApp.ftui.MakeFollowedTagsUI()
+	myApp.ftui.SetFollowedTags(myApp.followedTags)
+	w.SetContent(myApp.ftui.container)
 	w.Resize(fyne.Size{Width: 400, Height: 400})
 	w.ShowAndRun()
 }
