@@ -33,7 +33,7 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 	ui.removeButton = widget.NewButtonWithIcon("Remove", theme.NavigateNextIcon(), func() {})
 	ui.keepButton.Disable()
 	ui.removeButton.Disable()
-	buttons := container.NewVBox(ui.removeButton, ui.keepButton)
+	buttons := container.NewCenter(container.NewVBox(ui.removeButton, ui.keepButton))
 
 	keepList := widget.NewList(
 		func() int {
