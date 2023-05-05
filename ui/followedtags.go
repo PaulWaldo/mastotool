@@ -9,11 +9,13 @@ import (
 )
 
 type FollowedTagsUI struct {
-	KeepTags     []*mastodon.FollowedTag
-	RemoveTags   []*mastodon.FollowedTag
-	keepButton   *widget.Button
-	removeButton *widget.Button
-	container    *fyne.Container
+	KeepTags          []*mastodon.FollowedTag
+	RemoveTags        []*mastodon.FollowedTag
+	keepButton        *widget.Button
+	removeButton      *widget.Button
+	container         *fyne.Container
+	keepSelectionId   *widget.ListItemID
+	removeSelectionId *widget.ListItemID
 }
 
 func NewFollowedTagsUI() *FollowedTagsUI {
@@ -46,7 +48,9 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 			o.(*widget.Label).SetText(ui.KeepTags[i].Name)
 		},
 	)
+
 	keepList.OnSelected = func(id widget.ListItemID) {
+		ui.removeSelectionId = &id
 		ui.keepButton.Disable()
 		ui.removeButton.Enable()
 	}
@@ -65,13 +69,43 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 			o.(*widget.Label).SetText(ui.RemoveTags[i].Name)
 		},
 	)
+
 	removeList.OnSelected = func(id widget.ListItemID) {
+		ui.keepSelectionId = &id
 		ui.keepButton.Enable()
 		ui.removeButton.Disable()
 	}
 
 	removeLabel := widget.NewLabel("Tags to remove")
 	removeLabel.TextStyle = fyne.TextStyle{Bold: true}
+
+	ui.removeButton.OnTapped = func() {
+		// Add tag to Remove list
+		if ui.removeSelectionId == nil {
+			return
+		}
+		ui.RemoveTags = append(ui.RemoveTags, ui.KeepTags[*ui.removeSelectionId])
+
+		// Remove tag from Keep list
+		copy(ui.KeepTags[*ui.removeSelectionId:], ui.KeepTags[*ui.removeSelectionId+1:])
+		ui.KeepTags = ui.KeepTags[:len(ui.KeepTags)-1]
+
+		ui.container.Refresh()
+	}
+
+	ui.keepButton.OnTapped = func() {
+		// Add tag to Keep list
+		if ui.keepSelectionId == nil {
+			return
+		}
+		ui.KeepTags = append(ui.KeepTags, ui.KeepTags[*ui.keepSelectionId])
+
+		// Remove tag from Remove list
+		copy(ui.RemoveTags[*ui.keepSelectionId:], ui.RemoveTags[*ui.keepSelectionId+1:])
+		ui.RemoveTags = ui.RemoveTags[:len(ui.RemoveTags)-1]
+
+		ui.container.Refresh()
+	}
 
 	keepBox := container.NewBorder(keepLabel, nil, nil, nil, keepList)
 	buttonBox := container.NewBorder(nil, nil, nil, nil, buttons)
