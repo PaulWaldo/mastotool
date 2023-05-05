@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/test"
 	"github.com/mattn/go-mastodon"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,6 +23,9 @@ func Test_a(t *testing.T) {
 	bl := binding.NewUntypedList()
 	err := bl.Set(inter)
 	assert.NoError(t, err)
-	list := a(bl)
+	a := test.NewApp()
+	list := NewBoundList(bl)
+	w := a.NewWindow("")
+	w.SetContent(list)
 	assert.Equal(t, len(tags), list.Length())
 }
