@@ -3,6 +3,7 @@ package ui
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/mattn/go-mastodon"
@@ -112,4 +113,22 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 	removeBox := container.NewBorder(removeLabel, nil, nil, nil, removeList)
 	ui.container = container.NewHBox(keepBox, buttonBox, removeBox)
 	return ui.container
+}
+
+// https://github.com/fyne-io/developer.fyne.io/pull/54/files/d4a55ebe251f1d55b5abb5dc140c0e3d53c31787
+// https://github.com/mJehanno/developer.fyne.io/blob/master/tutorial/list-with-data.md
+func a(followedTagListBinding binding.UntypedList) *widget.List {
+	l := widget.NewListWithData(followedTagListBinding,
+		func() fyne.CanvasObject {
+			return container.NewVBox(widget.NewLabel(""))
+		},
+		func(di binding.DataItem, co fyne.CanvasObject) {
+			v, _ := di.(binding.Untyped).Get()
+			name := binding.NewString()
+
+			_ = name.Set(v.(mastodon.FollowedTag).Name)
+			co.(*fyne.Container).Objects[0].(*widget.Label).Bind(name)
+		},
+	)
+	return l
 }
