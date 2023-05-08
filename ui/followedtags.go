@@ -3,44 +3,36 @@ package ui
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/mattn/go-mastodon"
 )
 
 type FollowedTagsUI struct {
-	KeepTags          []*mastodon.FollowedTag
-	RemoveTags        []*mastodon.FollowedTag
-	kbl               binding.UntypedList
+	KeepTags   []*mastodon.FollowedTag
+	RemoveTags []*mastodon.FollowedTag
+	// KeepTagsBoundList   binding.UntypedList
+	// RemoveTagsBoundList binding.UntypedList
 	keepButton        *widget.Button
 	removeButton      *widget.Button
 	container         *fyne.Container
 	keepSelectionId   *widget.ListItemID
 	removeSelectionId *widget.ListItemID
+	keepListWidget    *widget.List
 }
 
-func NewFollowedTagsUI() *FollowedTagsUI {
-	return &FollowedTagsUI{
-		KeepTags:   []*mastodon.FollowedTag{},
+func NewFollowedTagsUI(ft []*mastodon.FollowedTag) FollowedTagsUI {
+	return FollowedTagsUI{
+		KeepTags:   ft,
 		RemoveTags: []*mastodon.FollowedTag{},
-		kbl:        binding.NewUntypedList(),
+		// KeepTagsBoundList:   binding.NewUntypedList(),
+		// RemoveTagsBoundList: binding.NewUntypedList(),
 	}
 }
 
 func (ui *FollowedTagsUI) SetFollowedTags(ft []*mastodon.FollowedTag) {
-	ui.KeepTags = make([]*mastodon.FollowedTag, len(ft))
-	copy(ui.KeepTags, ft)
-	inter := make([]interface{}, len(ui.KeepTags))
-
-	for i, v := range ui.KeepTags {
-		inter[i] = v
-	}
-	// ui.kbl = binding.NewUntypedList()
-	err := ui.kbl.Set(inter)
-	if err != nil {
-		panic(err)
-	}
+	ui.KeepTags = ft
+	ui.RemoveTags = []*mastodon.FollowedTag{}
 }
 
 func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
@@ -50,18 +42,18 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 	ui.removeButton.Disable()
 	buttons := container.NewCenter(container.NewVBox(ui.removeButton, ui.keepButton))
 
-	// keepList := widget.NewList(
-	// 	func() int {
-	// 		return len(ui.KeepTags)
-	// 	},
-	// 	func() fyne.CanvasObject {
-	// 		return widget.NewLabel("XXXXXXXXXXXXXXX")
-	// 	},
-	// 	func(i widget.ListItemID, o fyne.CanvasObject) {
-	// 		o.(*widget.Label).SetText(ui.KeepTags[i].Name)
-	// 	},
-	// )
-	keepList := NewBoundList(ui.kbl)
+	keepList := widget.NewList(
+		func() int {
+			return len(ui.KeepTags)
+		},
+		func() fyne.CanvasObject {
+			return widget.NewLabel("XXXXXXXXXXXXXXX")
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			o.(*widget.Label).SetText(ui.KeepTags[i].Name)
+		},
+	)
+	ui.keepListWidget = keepList
 
 	keepList.OnSelected = func(id widget.ListItemID) {
 		ui.removeSelectionId = &id
@@ -130,18 +122,25 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 
 // https://github.com/fyne-io/developer.fyne.io/pull/54/files/d4a55ebe251f1d55b5abb5dc140c0e3d53c31787
 // https://github.com/mJehanno/developer.fyne.io/blob/master/tutorial/list-with-data.md
-func NewBoundList(followedTagListBinding binding.UntypedList) *widget.List {
-	l := widget.NewListWithData(followedTagListBinding,
-		func() fyne.CanvasObject {
-			return container.NewVBox(widget.NewLabel(""))
-		},
-		func(di binding.DataItem, co fyne.CanvasObject) {
-			v, _ := di.(binding.Untyped).Get()
-			name := binding.NewString()
+// func NewBoundList(followedTagListBinding binding.UntypedList) *widget.List {
+// 	l := widget.NewListWithData(followedTagListBinding,
+// 		func() fyne.CanvasObject {
+// 			return container.NewVBox(widget.NewLabel(""))
+// 		},
+// 		func(di binding.DataItem, co fyne.CanvasObject) {
+// 			v, _ := di.(binding.Untyped).Get()
+// 			s := binding.BindStruct(v.(*mastodon.FollowedTag))
+// 			str, err := s.GetItem("Name")
+// 			if err != nil {
+// 				panic(err)
+// 			}
+// 			co.(*fyne.Container).Objects[0].(*widget.Label).Bind(str.(binding.String))
 
-			_ = name.Set(v.(*mastodon.FollowedTag).Name)
-			co.(*fyne.Container).Objects[0].(*widget.Label).Bind(name)
-		},
-	)
-	return l
-}
+// 			// name := binding.NewString()
+
+// 			// _ = name.Set(v.(*mastodon.FollowedTag).Name)
+// 			// co.(*fyne.Container).Objects[0].(*widget.Label).Bind(name)
+// 		},
+// 	)
+// 	return l
+// }

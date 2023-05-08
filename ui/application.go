@@ -168,7 +168,7 @@ func Run() {
 		fyne.LogError("In main, getting followed tags", err)
 	}
 
-	myApp.ftui = *NewFollowedTagsUI()
+	myApp.ftui = NewFollowedTagsUI(myApp.followedTags)
 	myApp.ftui.MakeFollowedTagsUI()
 	myApp.ftui.SetFollowedTags(myApp.followedTags)
 	w.SetContent(myApp.ftui.container)
