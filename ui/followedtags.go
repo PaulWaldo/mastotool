@@ -19,6 +19,7 @@ type FollowedTagsUI struct {
 	keepSelectionId   *widget.ListItemID
 	removeSelectionId *widget.ListItemID
 	keepListWidget    *widget.List
+	removeListWidget  *widget.List
 }
 
 func NewFollowedTagsUI(ft []*mastodon.FollowedTag) FollowedTagsUI {
@@ -33,6 +34,8 @@ func NewFollowedTagsUI(ft []*mastodon.FollowedTag) FollowedTagsUI {
 func (ui *FollowedTagsUI) SetFollowedTags(ft []*mastodon.FollowedTag) {
 	ui.KeepTags = ft
 	ui.RemoveTags = []*mastodon.FollowedTag{}
+	ui.keepListWidget.Refresh()
+	ui.removeListWidget.Refresh()
 }
 
 func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
@@ -40,7 +43,7 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 	ui.removeButton = widget.NewButtonWithIcon("Remove", theme.NavigateNextIcon(), func() {})
 	ui.keepButton.Disable()
 	ui.removeButton.Disable()
-	buttons := container.NewCenter(container.NewVBox(ui.removeButton, ui.keepButton))
+	buttons := container.NewBorder(container.NewVBox(ui.removeButton, ui.keepButton), nil, nil, nil)
 
 	keepList := widget.NewList(
 		func() int {
@@ -64,7 +67,7 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 	keepLabel := widget.NewLabel("Tags to keep")
 	keepLabel.TextStyle = fyne.TextStyle{Bold: true}
 
-	removeList := widget.NewList(
+	ui.removeListWidget = widget.NewList(
 		func() int {
 			return len(ui.RemoveTags)
 		},
@@ -76,7 +79,7 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 		},
 	)
 
-	removeList.OnSelected = func(id widget.ListItemID) {
+	ui.removeListWidget.OnSelected = func(id widget.ListItemID) {
 		ui.keepSelectionId = &id
 		ui.keepButton.Enable()
 		ui.removeButton.Disable()
@@ -104,7 +107,7 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 		if ui.keepSelectionId == nil {
 			return
 		}
-		ui.KeepTags = append(ui.KeepTags, ui.KeepTags[*ui.keepSelectionId])
+		ui.KeepTags = append(ui.KeepTags, ui.RemoveTags[*ui.keepSelectionId])
 
 		// Remove tag from Remove list
 		copy(ui.RemoveTags[*ui.keepSelectionId:], ui.RemoveTags[*ui.keepSelectionId+1:])
@@ -115,7 +118,7 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 
 	keepBox := container.NewBorder(keepLabel, nil, nil, nil, keepList)
 	buttonBox := container.NewBorder(nil, nil, nil, nil, buttons)
-	removeBox := container.NewBorder(removeLabel, nil, nil, nil, removeList)
+	removeBox := container.NewBorder(removeLabel, nil, nil, nil, ui.removeListWidget)
 	ui.container = container.NewHBox(keepBox, buttonBox, removeBox)
 	return ui.container
 }

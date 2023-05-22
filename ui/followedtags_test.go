@@ -2,178 +2,83 @@ package ui
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/test"
+	"fyne.io/fyne/v2/widget"
 	"github.com/mattn/go-mastodon"
 	"github.com/stretchr/testify/assert"
 )
 
-// func Test_a(t *testing.T) {
-// 	tags := []*mastodon.FollowedTag{
-// 		{Name: "name1"},
-// 		{Name: "name2"},
-// 		{Name: "name3"},
-// 	}
-// 	inter := make([]interface{}, len(tags))
-
-// 	for i, v := range tags {
-// 		inter[i] = v
-// 	}
-// 	bl := binding.NewUntypedList()
-// 	err := bl.Set(inter)
-// 	assert.NoError(t, err)
-// 	a := test.NewApp()
-// 	list := NewBoundList(bl)
-// 	w := a.NewWindow("")
-// 	w.SetContent(list)
-// 	assert.Equal(t, len(tags), list.Length())
-// }
-
-// func Test_UI(t *testing.T) {
-// 	tags := []*mastodon.FollowedTag{
-// 		{Name: "name1"},
-// 		{Name: "name2"},
-// 		{Name: "name3"},
-// 	}
-
-// 	a := test.NewApp()
-// 	w := a.NewWindow("")
-// 	ui := NewFollowedTagsUI()
-// 	ui.SetFollowedTags(tags)
-// 	w.SetContent(ui.MakeFollowedTagsUI())
-// 	assert.NotNil(t, ui.keepListWidget)
-// 	assert.Equal(t, len(tags), ui.keepListWidget.Length())
-// 	wr := test.WidgetRenderer(ui.keepListWidget)
-// 	items := wr.Objects()
-// 	assert.Equal(t, items[0], "name1")
-// }
+func getListItem(l *widget.List, index int) fyne.CanvasObject {
+	l.ScrollTo(index)
+	listRenderer := test.WidgetRenderer(l)
+	items := listRenderer.Objects()
+	scrollRenderer := test.WidgetRenderer(items[0].(fyne.Widget))
+	scrollObjs := scrollRenderer.Objects()
+	listContainer := scrollObjs[0].(*fyne.Container)
+	listCanvas := listContainer.Objects
+	listItem := listCanvas[index].(fyne.Widget)
+	listItemRenderer := test.WidgetRenderer(listItem)
+	listItemCanvas := listItemRenderer.Objects()
+	return listItemCanvas[1].(*widget.Label)
+}
 
 func TestFollowedTagsUI_MakeFollowedTagsUI(t *testing.T) {
 	type fields struct {
 		followedTags []*mastodon.FollowedTag
 	}
+	numFollowedTags := 3
+	allFollowedTags := make([]*mastodon.FollowedTag, numFollowedTags)
+	for i := 0; i < numFollowedTags; i++ {
+		allFollowedTags[i] = &mastodon.FollowedTag{
+			Name: fmt.Sprintf("Tag%d", i),
+			History: []mastodon.FollowedTagHistory{
+				{
+					Day:      mastodon.UnixTimeString{Time: time.Now()},
+					Accounts: 10 * i,
+					Uses:     100 * i,
+				},
+				{
+					Day:      mastodon.UnixTimeString{Time: time.Now().AddDate(0, 0, -1)},
+					Accounts: 20 * i,
+					Uses:     200 * i,
+				},
+				{
+					Day:      mastodon.UnixTimeString{Time: time.Now().AddDate(0, 0, -2)},
+					Accounts: 30 * i,
+					Uses:     300 * i,
+				},
+			},
+		}
+	}
 	tests := []struct {
 		name   string
 		fields fields
-		want   *fyne.Container
+		// want   *fyne.Container
 	}{
 		{
-			name: "A few followed tags",
+			name: "Initial tags in keep list, none in remove list",
 			fields: fields{
-				followedTags: []*mastodon.FollowedTag{
-					{
-						Name: "tag1",
-						History: []mastodon.FollowedTagHistory{
-							{
-								Day:      mastodon.UnixTimeString{Time: time.Now()},
-								Accounts: 300,
-								Uses:     3000,
-							},
-							{
-								Day:      mastodon.UnixTimeString{Time: time.Now().AddDate(0, 0, -1)},
-								Accounts: 200,
-								Uses:     3000,
-							},
-							{
-								Day:      mastodon.UnixTimeString{Time: time.Now().AddDate(0, 0, -2)},
-								Accounts: 100,
-								Uses:     1000,
-							},
-						},
-					},
-					{
-						Name: "tag2",
-						History: []mastodon.FollowedTagHistory{
-							{
-								Day:      mastodon.UnixTimeString{Time: time.Now()},
-								Accounts: 150,
-								Uses:     1500,
-							},
-							{
-								Day:      mastodon.UnixTimeString{Time: time.Now().AddDate(0, 0, -1)},
-								Accounts: 100,
-								Uses:     1000,
-							},
-							{
-								Day:      mastodon.UnixTimeString{Time: time.Now().AddDate(0, 0, -2)},
-								Accounts: 50,
-								Uses:     500,
-							},
-						},
-					},
-				},
+				followedTags: allFollowedTags,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_ = test.NewApp()
-			ui := &FollowedTagsUI{KeepTags: tt.fields.followedTags}
-			if got := ui.MakeFollowedTagsUI(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FollowedTagsUI.MakeFollowedTagsUI() = %v, want %v", got, tt.want)
+			a := test.NewApp()
+			w := a.NewWindow("")
+			ui := NewFollowedTagsUI(tt.fields.followedTags)
+			w.SetContent(ui.MakeFollowedTagsUI())
+			w.Resize(fyne.Size{Width: 400, Height: 400})
+			assert.Equal(t, len(allFollowedTags), ui.keepListWidget.Length(), "Expecting list widget to have %d items, got %d", len(allFollowedTags), ui.keepListWidget.Length())
+
+			for i, v := range allFollowedTags {
+				got := getListItem(ui.keepListWidget, i).(*widget.Label)
+				assert.Equal(t, v.Name, got.Text, "Expecting keep list item %d to be %s, but got %s", i, v.Name, got.Text)
 			}
 		})
 	}
-}
-func TestFollowedTagsUI_KeepTagsPopulate(t *testing.T) {
-	followedTags := []*mastodon.FollowedTag{
-		{
-			Name: "tag1",
-			History: []mastodon.FollowedTagHistory{
-				{
-					Day:      mastodon.UnixTimeString{Time: time.Now()},
-					Accounts: 300,
-					Uses:     3000,
-				},
-				{
-					Day:      mastodon.UnixTimeString{Time: time.Now().AddDate(0, 0, -1)},
-					Accounts: 200,
-					Uses:     3000,
-				},
-				{
-					Day:      mastodon.UnixTimeString{Time: time.Now().AddDate(0, 0, -2)},
-					Accounts: 100,
-					Uses:     1000,
-				},
-			},
-		},
-		{
-			Name: "tag2",
-			History: []mastodon.FollowedTagHistory{
-				{
-					Day:      mastodon.UnixTimeString{Time: time.Now()},
-					Accounts: 150,
-					Uses:     1500,
-				},
-				{
-					Day:      mastodon.UnixTimeString{Time: time.Now().AddDate(0, 0, -1)},
-					Accounts: 100,
-					Uses:     1000,
-				},
-				{
-					Day:      mastodon.UnixTimeString{Time: time.Now().AddDate(0, 0, -2)},
-					Accounts: 50,
-					Uses:     500,
-				},
-			},
-		},
-	}
-	_ = test.NewApp()
-	ui := &FollowedTagsUI{KeepTags: followedTags}
-	_ = ui.MakeFollowedTagsUI()
-	keepList := ui.keepListWidget
-	assert.Equal(t, len(followedTags), keepList.Length())
-	renderer := test.WidgetRenderer(ui.keepListWidget)
-	items := renderer.Objects()
-	scrollRenderer := test.WidgetRenderer(items[0].(fyne.Widget))
-	scrollObjs:= scrollRenderer.Objects()
-	fmt.Printf("Objs: %+v\n", scrollObjs)
-	xx := scrollObjs[0].(*fyne.Container)
-	fmt.Printf("xx: %+v\n", xx)
-	yy:=xx.Objects[0].(fyne.Widget)
-	fmt.Printf("yy: %+v\n", yy)
 }
