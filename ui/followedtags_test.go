@@ -57,7 +57,6 @@ func TestFollowedTagsUI_MakeFollowedTagsUI(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		// want   *fyne.Container
 	}{
 		{
 			name: "Initial tags in keep list, none in remove list",
@@ -73,7 +72,8 @@ func TestFollowedTagsUI_MakeFollowedTagsUI(t *testing.T) {
 			ui := NewFollowedTagsUI(tt.fields.followedTags)
 			w.SetContent(ui.MakeFollowedTagsUI())
 			w.Resize(fyne.Size{Width: 400, Height: 400})
-			assert.Equal(t, len(allFollowedTags), ui.keepListWidget.Length(), "Expecting list widget to have %d items, got %d", len(allFollowedTags), ui.keepListWidget.Length())
+			assert.Equal(t, len(allFollowedTags), ui.keepListWidget.Length(), "Expecting keep list widget to have %d items, got %d", len(allFollowedTags), ui.keepListWidget.Length())
+			assert.Equal(t, 0, ui.removeListWidget.Length())
 
 			for i, v := range allFollowedTags {
 				got := getListItem(ui.keepListWidget, i).(*widget.Label)
