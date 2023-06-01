@@ -84,6 +84,9 @@ func TestFollowedTagsUI_MakeFollowedTagsUI(t *testing.T) {
 				got := getListItem(ui.keepListWidget, i).(*widget.Label)
 				assert.Equal(t, v.Name, got.Text, "Expecting keep list item %d to be %s, but got %s", i, v.Name, got.Text)
 			}
+
+			// Initial state of Unfollow button should be disabled
+			assert.True(t, ui.unfollowButton.Disabled(), "Initial state of Unfollow button should be disabled")
 		})
 	}
 }

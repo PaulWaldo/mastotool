@@ -15,6 +15,7 @@ type FollowedTagsUI struct {
 	// RemoveTagsBoundList binding.UntypedList
 	keepButton        *widget.Button
 	removeButton      *widget.Button
+	unfollowButton    *widget.Button
 	container         *fyne.Container
 	keepSelectionId   *widget.ListItemID
 	removeSelectionId *widget.ListItemID
@@ -41,8 +42,10 @@ func (ui *FollowedTagsUI) SetFollowedTags(ft []*mastodon.FollowedTag) {
 func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 	ui.keepButton = widget.NewButtonWithIcon("Keep", theme.NavigateBackIcon(), func() {})
 	ui.removeButton = widget.NewButtonWithIcon("Remove", theme.NavigateNextIcon(), func() {})
+	ui.unfollowButton = widget.NewButtonWithIcon("Unfollow", theme.DeleteIcon(), func() {})
 	ui.keepButton.Disable()
 	ui.removeButton.Disable()
+	ui.unfollowButton.Disable()
 	buttons := container.NewBorder(container.NewVBox(ui.removeButton, ui.keepButton), nil, nil, nil)
 
 	keepList := widget.NewList(
