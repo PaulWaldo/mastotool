@@ -122,7 +122,9 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 	keepBox := container.NewBorder(keepLabel, nil, nil, nil, keepList)
 	buttonBox := container.NewBorder(nil, nil, nil, nil, buttons)
 	removeBox := container.NewBorder(removeLabel, nil, nil, nil, ui.removeListWidget)
-	ui.container = container.NewHBox(keepBox, buttonBox, removeBox)
+	ui.container = container.NewBorder(nil, ui.unfollowButton, nil, nil,
+		container.NewHBox(keepBox, buttonBox, removeBox),
+	)
 	return ui.container
 }
 
