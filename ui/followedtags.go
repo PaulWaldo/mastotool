@@ -103,6 +103,7 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 		ui.KeepTags = ui.KeepTags[:len(ui.KeepTags)-1]
 
 		ui.container.Refresh()
+		ui.unfollowButton.Enable()
 	}
 
 	ui.keepButton.OnTapped = func() {
@@ -117,6 +118,12 @@ func (ui *FollowedTagsUI) MakeFollowedTagsUI() *fyne.Container {
 		ui.RemoveTags = ui.RemoveTags[:len(ui.RemoveTags)-1]
 
 		ui.container.Refresh()
+
+		if ui.removeListWidget.Length() > 0 {
+			ui.unfollowButton.Enable()
+		} else {
+			ui.unfollowButton.Disable()
+		}
 	}
 
 	keepBox := container.NewBorder(keepLabel, nil, nil, nil, keepList)

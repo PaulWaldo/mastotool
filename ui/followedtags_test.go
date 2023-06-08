@@ -102,6 +102,7 @@ func TestFollowedTagsUI_ButtonPressesMoveTags(t *testing.T) {
 	assert.Equal(t, len(allFollowedTags), ui.keepListWidget.Length())
 	assert.True(t, ui.removeButton.Disabled())
 	assert.True(t, ui.keepButton.Disabled())
+	assert.True(t, ui.unfollowButton.Disabled())
 
 	// Move all tags from keep list to remove list
 	for numRemove := 1; numRemove <= len(allFollowedTags); numRemove++ {
@@ -110,14 +111,18 @@ func TestFollowedTagsUI_ButtonPressesMoveTags(t *testing.T) {
 		test.Tap(ui.removeButton)
 		assert.Equal(t, numRemove, ui.removeListWidget.Length())
 		assert.Equal(t, len(allFollowedTags)-numRemove, ui.keepListWidget.Length())
+		assert.False(t, ui.unfollowButton.Disabled())
 	}
 
 	// Move all tags back to keep list
 	for numRemove := 1; numRemove <= len(allFollowedTags); numRemove++ {
+		ui.removeListWidget.Select(0)
+		assert.False(t, ui.unfollowButton.Disabled())
 		ui.removeListWidget.Select(0)
 		assert.False(t, ui.keepButton.Disabled())
 		test.Tap(ui.keepButton)
 		assert.Equal(t, numRemove, ui.keepListWidget.Length())
 		assert.Equal(t, len(allFollowedTags)-numRemove, ui.removeListWidget.Length())
 	}
+	assert.True(t, ui.unfollowButton.Disabled())
 }
