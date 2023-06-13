@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
@@ -14,9 +16,10 @@ import (
 	"github.com/mattn/go-mastodon"
 )
 
+// preferences stores user data locally between application runs
 type preferences struct {
-	MastodonServer binding.String
-	AccessToken    binding.String
+	MastodonServer binding.String // User's Mastodon server
+	AccessToken    binding.String // Token provided by Mastodon
 	ClientID       binding.String
 	ClientSecret   binding.String
 }
@@ -34,6 +37,52 @@ type myApp struct {
 	ftui         FollowedTagsUI
 }
 
+func makeRemoveConfirmUI(tags []*mastodon.FollowedTag) fyne.CanvasObject {
+	var sb strings.Builder
+	sb.WriteString("These tags will be removed from your following list and not seen in your feed:")
+	for _, t := range tags {
+		sb.WriteString("\n* " + t.Name)
+	}
+	rt := widget.NewRichTextFromMarkdown(sb.String())
+	rt.Wrapping = fyne.TextWrapWord
+	scroll := container.NewVScroll(rt)
+	scroll.SetMinSize(fyne.Size{Width: 100, Height: 150})
+	return scroll
+}
+
+// RemoveFollowedTags removes the given list of tags from the user's following list.
+// These tags will no longer show up in the user's feed
+func (ma *myApp) RemoveFollowedTags(w fyne.Window) func() {
+	return func() {
+		dialog.ShowCustomConfirm("Confirm Unfollow", "Unfollow", "Cancel", makeRemoveConfirmUI(ma.ftui.RemoveTags), func(b bool) {
+			if b {
+				c := NewClientFromPrefs(ma.prefs)
+				err := mastotool.RemoveFollowedTags(*c, ma.ftui.RemoveTags)
+				if err != nil {
+					dialog.NewError(err, w)
+					return
+				} else {
+					tags := make([]string, len(ma.ftui.RemoveTags))
+					for i, t := range ma.ftui.RemoveTags {
+						tags[i] = t.Name
+					}
+					dialog.NewInformation(
+						"Success",
+						"Tags successfully unfollowed",
+						w).Show()
+				}
+				err = ma.getFollowedTags()
+				if err != nil {
+					dialog.NewError(err, w)
+				}
+				// TODO: this does not work because the data store is not connected properly
+				ma.ftui.container.Refresh()
+			}
+		}, w)
+	}
+}
+
+// getFollowedTags gets the list of followed tags and populates the keepTags and removeTags based on this
 func (ma *myApp) getFollowedTags() error {
 	var err error
 	c := NewClientFromPrefs(ma.prefs)
@@ -54,6 +103,7 @@ func (ma *myApp) getFollowedTags() error {
 	return nil
 }
 
+// NewClientFromPrefs creates a new Mastodon client from user preferences
 func NewClientFromPrefs(p preferences) *mastodon.Client {
 	server, _ := p.MastodonServer.Get()
 	clientID, _ := p.ClientID.Get()
@@ -70,6 +120,7 @@ func NewClientFromPrefs(p preferences) *mastodon.Client {
 
 var authURI *url.URL
 
+// getAuthCode allows the user to input the Authentication Token provided by Mastodon into the preferences
 func (ma *myApp) getAuthCode(w fyne.Window) {
 	accessTokenEntry := widget.NewEntry()
 	accessTokenEntry.Validator = nil
@@ -101,6 +152,7 @@ func (ma *myApp) getAuthCode(w fyne.Window) {
 		w).Show()
 }
 
+// Run is the main entry point into the GUI application
 func Run() {
 	a := app.NewWithID("com.github.PaulWaldo.mastotool")
 	prefs := preferences{
@@ -171,6 +223,7 @@ func Run() {
 	myApp.ftui = NewFollowedTagsUI(myApp.followedTags)
 	myApp.ftui.MakeFollowedTagsUI()
 	myApp.ftui.SetFollowedTags(myApp.followedTags)
+	myApp.ftui.unfollowButton.OnTapped = myApp.RemoveFollowedTags(w)
 	w.SetContent(myApp.ftui.container)
 	w.Resize(fyne.Size{Width: 400, Height: 400})
 	w.ShowAndRun()
