@@ -91,7 +91,7 @@ func TestFollowedTagsUI_MakeFollowedTagsUI(t *testing.T) {
 	}
 }
 
-func TestFollowedTagsUI_ButtonPressesMoveTags(t *testing.T) {
+func TestFollowedTagsUI_TagMovingButtonPressesMoveTags(t *testing.T) {
 	numFollowedTags := 2
 	allFollowedTags := getTagList(numFollowedTags)
 	a := test.NewApp()
