@@ -2,7 +2,7 @@ module github.com/PaulWaldo/mastotool
 
 go 1.19
 
-// replace github.com/mattn/go-mastodon => github.com/PaulWaldo/go-mastodon v1.0.0
+replace github.com/mattn/go-mastodon => github.com/PaulWaldo/go-mastodon v1.1.0
 
 require (
 	fyne.io/fyne/v2 v2.3.4
