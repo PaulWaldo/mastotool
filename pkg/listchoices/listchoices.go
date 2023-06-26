@@ -78,11 +78,15 @@ type listChoicesRenderer struct {
 	container   *fyne.Container
 }
 
-func (lcr listChoicesRenderer) Destroy() {}
+func (lcr listChoicesRenderer) Destroy() {
+}
 
-func (lcr listChoicesRenderer) Layout(s fyne.Size) {}
+func (lcr listChoicesRenderer) Layout(s fyne.Size) {
+}
 
-func (lcr listChoicesRenderer) MinSize() fyne.Size { return fyne.Size{} }
+func (lcr listChoicesRenderer) MinSize() fyne.Size {
+	return fyne.Size{}
+}
 
 func (lcr listChoicesRenderer) Objects() []fyne.CanvasObject {
 	// lc := lcr.listChoices
