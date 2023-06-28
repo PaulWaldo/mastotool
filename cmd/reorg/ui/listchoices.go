@@ -1,4 +1,4 @@
-package listchoices
+package ui
 
 import (
 	"fyne.io/fyne/v2"
@@ -8,10 +8,10 @@ import (
 	"github.com/mattn/go-mastodon"
 )
 
-type ListChoices struct {
+type listChoices struct {
 	widget.BaseWidget
-	LeftItems, RightItems []*mastodon.FollowedTag
-	LeftLabel, RightLabel string
+	leftItems, rightItems []*mastodon.FollowedTag
+	leftLabel, rightLabel string
 
 	leftList, rightList               *widget.List
 	moveLeftButton, moveRightButton   *widget.Button
@@ -20,10 +20,8 @@ type ListChoices struct {
 
 func NewListChoices(
 	leftItems, rightItems []*mastodon.FollowedTag,
-	// createItem func() fyne.CanvasObject,
-	// updateItem func(widget.ListItemID, fyne.CanvasObject),
-) *ListChoices {
-	lc := &ListChoices{
+) *listChoices {
+	lc := &listChoices{
 		leftList: widget.NewList(
 			func() int { return len(leftItems) },
 			func() fyne.CanvasObject {
@@ -63,7 +61,7 @@ func NewListChoices(
 	return lc
 }
 
-func (lc *ListChoices) CreateRenderer() fyne.WidgetRenderer {
+func (lc *listChoices) CreateRenderer() fyne.WidgetRenderer {
 	lcr := listChoicesRenderer{
 		listChoices: lc,
 		container:   container.NewHBox(lc.leftList, lc.moveLeftButton, lc.moveRightButton, lc.rightList),
@@ -74,7 +72,7 @@ func (lc *ListChoices) CreateRenderer() fyne.WidgetRenderer {
 var _ fyne.WidgetRenderer = listChoicesRenderer{}
 
 type listChoicesRenderer struct {
-	listChoices *ListChoices
+	listChoices *listChoices
 	container   *fyne.Container
 }
 

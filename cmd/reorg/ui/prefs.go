@@ -6,8 +6,8 @@ import (
 	"github.com/mattn/go-mastodon"
 )
 
-// preferences stores user data locally between application runs
-type preferences struct {
+// Preferences stores user data locally between application runs
+type Preferences struct {
 	MastodonServer binding.String // User's Mastodon server
 	AccessToken    binding.String // Token provided by Mastodon
 	ClientID       binding.String
@@ -15,7 +15,7 @@ type preferences struct {
 }
 
 // NewClientFromPrefs creates a new Mastodon client from user preferences
-func NewClientFromPrefs(p preferences) *mastodon.Client {
+func NewClientFromPrefs(p Preferences) *mastodon.Client {
 	server, _ := p.MastodonServer.Get()
 	clientID, _ := p.ClientID.Get()
 	clientSecret, _ := p.ClientSecret.Get()
@@ -29,12 +29,11 @@ func NewClientFromPrefs(p preferences) *mastodon.Client {
 	return mastodon.NewClient(conf)
 }
 
-func NewPreferences(a fyne.App) *preferences {
-	return &preferences{
+func NewPreferences(a fyne.App) Preferences {
+	return Preferences{
 		MastodonServer: binding.BindPreferenceString("MastodonServer", a.Preferences()),
 		AccessToken:    binding.BindPreferenceString("AcessToken", a.Preferences()),
 		ClientID:       binding.BindPreferenceString("ClientID", a.Preferences()),
 		ClientSecret:   binding.BindPreferenceString("ClientSecret", a.Preferences()),
 	}
-
 }

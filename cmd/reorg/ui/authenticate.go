@@ -42,7 +42,7 @@ func (ma *myApp) authenticate() {
 				return
 			}
 			ma.getAuthCode()
-			c := NewClientFromPrefs(*ma.prefs)
+			c := NewClientFromPrefs(ma.prefs)
 			_, err = c.VerifyAppCredentials(context.Background())
 			if err != nil {
 				dialog.NewError(err, ma.window).Show()
@@ -67,7 +67,7 @@ func (ma *myApp) getAuthCode() {
 		}},
 		func(confirmed bool) {
 			if confirmed {
-				c := NewClientFromPrefs(*ma.prefs)
+				c := NewClientFromPrefs(ma.prefs)
 				fmt.Printf("After authorizing, client is \n%+v\n", c.Config)
 				err := c.AuthenticateToken(context.Background(), accessTokenEntry.Text, "urn:ietf:wg:oauth:2.0:oob")
 				if err != nil {
