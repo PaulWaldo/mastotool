@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/PaulWaldo/mastotool/cmd/reorg/ui"
+	"github.com/PaulWaldo/mastotool/reorg/ui"
 	"github.com/mattn/go-mastodon"
 )
 

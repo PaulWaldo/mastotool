@@ -10,10 +10,11 @@ import (
 )
 
 type myApp struct {
-	prefs        Preferences
-	app          fyne.App
-	window       fyne.Window
-	followedTags *followedTags
+	prefs                Preferences
+	app                  fyne.App
+	window               fyne.Window
+	followedTags         FollowedTagsUI
+	keepTags, removeTags []*mastodon.FollowedTag
 }
 
 func Run() {
@@ -33,11 +34,12 @@ func Run() {
 // getFollowedTags gets the list of followed tags and populates the keepTags and removeTags based on this
 func (ma *myApp) getFollowedTags() {
 	c := NewClientFromPrefs(ma.prefs)
-	var err error
-	ma.followedTags.keepTags, err = c.GetFollowedTags(context.Background(), nil)
+	// var err error
+	tags, err := c.GetFollowedTags(context.Background(), nil)
 	if err != nil {
-		ma.followedTags.keepTags = []*mastodon.FollowedTag{}
+		tags = []*mastodon.FollowedTag{}
 		dialog.ShowError(err, ma.window)
 	}
-	ma.followedTags.removeTags = []*mastodon.FollowedTag{}
+	// ma.followedTags.removeTags = []*mastodon.FollowedTag{}
+	ma.followedTags.SetFollowedTags(tags)
 }
