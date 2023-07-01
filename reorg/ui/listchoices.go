@@ -86,7 +86,9 @@ func (lc *ListChoices) CreateRenderer() fyne.WidgetRenderer {
 		container.NewVBox(lc.moveLeftButton, lc.moveRightButton),
 		nil, nil, nil)
 	keepBox := container.NewBorder(lc.leftLabel, nil, nil, nil, lc.leftList)
-	buttonBox := container.NewBorder(nil, nil, nil, nil, buttons)
+	// Create filler for the buttons to keep them from being at the very top
+	fill := widget.NewLabel("")
+	buttonBox := container.NewBorder(fill, nil, nil, nil, buttons)
 	removeBox := container.NewBorder(lc.rightLabel, nil, nil, nil, lc.rightList)
 	container := container.NewHBox(keepBox, buttonBox, removeBox)
 
