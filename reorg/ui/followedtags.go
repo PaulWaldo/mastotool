@@ -17,7 +17,13 @@ func (ft *FollowedTagsUI) MakeFollowedTagsUI() fyne.CanvasObject {
 	ft.ListChoices = NewListChoices()
 
 	ft.ListChoices.leftLabel.Text = "Keep"
+	ft.ListChoices.leftLabel.TextStyle = fyne.TextStyle{Bold: true}
+	ft.ListChoices.leftLabel.Alignment = fyne.TextAlignCenter
+
 	ft.ListChoices.rightLabel.Text = "To Remove"
+	ft.ListChoices.rightLabel.TextStyle = fyne.TextStyle{Bold: true}
+	ft.ListChoices.rightLabel.Alignment = fyne.TextAlignCenter
+
 	ft.ListChoices.LeftItems = ft.KeepTags
 	ft.ListChoices.RightItems = ft.RemoveTags
 	return container.NewMax(ft.ListChoices)

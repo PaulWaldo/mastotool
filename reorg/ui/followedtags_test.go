@@ -54,7 +54,6 @@ func TestSetFollowedTags_PopulatesList(t *testing.T) {
 }
 
 func TestFollowedTagsUI_ListHeadersAreCorrect(t *testing.T) {
-	t
 	a := test.NewApp()
 	w := a.NewWindow("")
 	ftui := FollowedTagsUI{}
@@ -64,8 +63,18 @@ func TestFollowedTagsUI_ListHeadersAreCorrect(t *testing.T) {
 	w.SetContent(c)
 	w.Resize(fyne.Size{Width: 400, Height: 400})
 
-	assert.True(t, ftui.ListChoices.leftLabel.TextStyle.Bold)
-	assert.Equal(t, fyne.TextAlignCenter, ftui.ListChoices.leftLabel.Alignment)
+	assert.True(t, ftui.ListChoices.leftLabel.TextStyle.Bold,
+		"Expecting left label style to be Bold")
+	assert.Equal(t,
+		fyne.TextAlignCenter, ftui.ListChoices.leftLabel.Alignment,
+		"Expecting left label alignment to be %d, but got %d",
+		fyne.TextAlignCenter, ftui.ListChoices.leftLabel.Alignment)
+	assert.True(t, ftui.ListChoices.rightLabel.TextStyle.Bold,
+		"Expecting right label style to be Bold")
+	assert.Equal(t,
+		fyne.TextAlignCenter, ftui.ListChoices.leftLabel.Alignment,
+		"Expecting right label alignment to be %d, but got %d",
+		fyne.TextAlignCenter, ftui.ListChoices.rightLabel.Alignment)
 }
 
 // func TestFollowedTagsUI_TagMovingButtonPressesMoveTags(t *testing.T) {
