@@ -83,7 +83,7 @@ func (lc *ListChoices) SetRightItems(t []*mastodon.FollowedTag) {
 
 func (lc *ListChoices) CreateRenderer() fyne.WidgetRenderer {
 	buttons := container.NewBorder(
-		container.NewVBox(lc.moveLeftButton, lc.moveRightButton),
+		container.NewVBox(lc.moveRightButton,lc.moveLeftButton),
 		nil, nil, nil)
 	keepBox := container.NewBorder(lc.leftLabel, nil, nil, nil, lc.leftList)
 	// Create filler for the buttons to keep them from being at the very top
