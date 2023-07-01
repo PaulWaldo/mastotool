@@ -44,8 +44,15 @@ func NewListChoices() *ListChoices {
 			o.(*widget.Label).SetText(lc.RightItems[i].Name)
 		},
 	)
-	lc.leftLabel = widget.NewLabel("")
-	lc.rightLabel = widget.NewLabel("")
+
+	lc.leftLabel = widget.NewLabel("Left")
+	lc.leftLabel.TextStyle = fyne.TextStyle{Bold: true}
+	lc.leftLabel.Alignment = fyne.TextAlignCenter
+
+	lc.rightLabel = widget.NewLabel("Right")
+	lc.rightLabel.TextStyle = fyne.TextStyle{Bold: true}
+	lc.rightLabel.Alignment = fyne.TextAlignCenter
+
 	lc.moveRightButton = widget.NewButtonWithIcon("Remove", theme.NavigateNextIcon(), func() {
 	})
 	lc.moveLeftButton = widget.NewButtonWithIcon("Keep", theme.NavigateBackIcon(), func() {
@@ -75,17 +82,17 @@ func (lc *ListChoices) SetRightItems(t []*mastodon.FollowedTag) {
 }
 
 func (lc *ListChoices) CreateRenderer() fyne.WidgetRenderer {
-	buttons := container.NewVBox(lc.moveLeftButton, lc.moveRightButton)
-	// keepBox := container.NewBorder(lc.leftLabel, nil, nil, nil, lc.leftList)
-	// buttonBox := container.NewBorder(nil, nil, nil, nil, buttons)
-	// removeBox := container.NewBorder(lc.rightLabel, nil, nil, nil, lc.rightList)
-	// ui.container = container.NewBorder(nil, ui.unfollowButton, nil, nil,
-	// 	container.NewHBox(keepBox, buttonBox, removeBox),
-	// )
+	buttons := container.NewBorder(
+		container.NewVBox(lc.moveLeftButton, lc.moveRightButton),
+		nil, nil, nil)
+	keepBox := container.NewBorder(lc.leftLabel, nil, nil, nil, lc.leftList)
+	buttonBox := container.NewBorder(nil, nil, nil, nil, buttons)
+	removeBox := container.NewBorder(lc.rightLabel, nil, nil, nil, lc.rightList)
+	container := container.NewHBox(keepBox, buttonBox, removeBox)
 
 	lcr := listChoicesRenderer{
 		listChoices: lc,
-		container:   container.NewHBox(lc.leftList, buttons, lc.rightList),
+		container:   container,
 	}
 	return lcr
 }

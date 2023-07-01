@@ -32,3 +32,23 @@ func TestListChoices_DisplaysCorrectItems(t *testing.T) {
 	}
 }
 
+func TestListChoices_ListHeadersAreCorrect(t *testing.T) {
+	a := test.NewApp()
+	w := a.NewWindow("")
+	lc := NewListChoices()
+	w.SetContent(lc)
+	w.Resize(fyne.Size{Width: 400, Height: 400})
+
+	assert.True(t, lc.leftLabel.TextStyle.Bold,
+		"Expecting left label style to be Bold")
+	assert.Equal(t,
+		fyne.TextAlignCenter, lc.leftLabel.Alignment,
+		"Expecting left label alignment to be %d, but got %d",
+		fyne.TextAlignCenter, lc.leftLabel.Alignment)
+	assert.True(t, lc.rightLabel.TextStyle.Bold,
+		"Expecting right label style to be Bold")
+	assert.Equal(t,
+		fyne.TextAlignCenter, lc.leftLabel.Alignment,
+		"Expecting right label alignment to be %d, but got %d",
+		fyne.TextAlignCenter, lc.rightLabel.Alignment)
+}
