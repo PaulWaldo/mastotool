@@ -16,7 +16,7 @@ type FollowedTagsUI struct {
 func (ft *FollowedTagsUI) MakeFollowedTagsUI() fyne.CanvasObject {
 	ft.ListChoices = NewListChoices()
 
-	ft.ListChoices.leftLabel.Text = "Keep"
+	ft.ListChoices.leftLabel.Text = "To Keep"
 	ft.ListChoices.leftLabel.TextStyle = fyne.TextStyle{Bold: true}
 	ft.ListChoices.leftLabel.Alignment = fyne.TextAlignCenter
 
