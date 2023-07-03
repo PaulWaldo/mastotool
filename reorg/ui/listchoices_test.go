@@ -52,3 +52,36 @@ func TestListChoices_ListHeadersAreCorrect(t *testing.T) {
 		"Expecting right label alignment to be %d, but got %d",
 		fyne.TextAlignCenter, lc.rightLabel.Alignment)
 }
+
+func TestListChoices_TagMovingButtonTapsMoveTags(t *testing.T) {
+	numFollowedTags := 2
+	allFollowedTags := createTags("Tag", numFollowedTags)
+	a := test.NewApp()
+	w := a.NewWindow("")
+	lc := NewListChoices()
+	lc.SetLeftItems(allFollowedTags)
+	ui := container.NewMax(lc)
+	w.SetContent(ui)
+	w.Resize(fyne.Size{Width: 400, Height: 400})
+	assert.Equal(t, len(allFollowedTags), lc.leftList.Length(), "Left List length")
+	assert.True(t, lc.moveRightButton.Disabled(), "Move right button diabled")
+	assert.True(t, lc.moveLeftButton.Disabled(), "Move left button disabled")
+
+	// Move all tags from left list to right list
+	for numRemove := 1; numRemove <= len(allFollowedTags); numRemove++ {
+		lc.leftList.Select(0)
+		assert.False(t, lc.moveRightButton.Disabled(), "Move right button should be enabled when left item selected")
+		test.Tap(lc.moveRightButton)
+		assert.Equal(t, numRemove, lc.rightList.Length())
+		assert.Equal(t, len(allFollowedTags)-numRemove, lc.leftList.Length())
+	}
+
+	// Move all tags back to left list
+	for numRemove := 1; numRemove <= len(allFollowedTags); numRemove++ {
+		lc.rightList.Select(0)
+		assert.False(t, lc.moveLeftButton.Disabled(), "Move left button should be enabled when right item selected")
+		test.Tap(lc.moveLeftButton)
+		assert.Equal(t, numRemove, lc.leftList.Length())
+		assert.Equal(t, len(allFollowedTags)-numRemove, lc.rightList.Length())
+	}
+}

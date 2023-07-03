@@ -18,6 +18,7 @@ type ListChoices struct {
 	leftList, rightList               *widget.List
 	moveLeftButton, moveRightButton   *widget.Button
 	leftSelectionId, rightSelectionId widget.ListItemID
+	container                         *fyne.Container
 }
 
 func NewListChoices() *ListChoices {
@@ -53,10 +54,31 @@ func NewListChoices() *ListChoices {
 	lc.rightLabel.TextStyle = fyne.TextStyle{Bold: true}
 	lc.rightLabel.Alignment = fyne.TextAlignCenter
 
-	lc.moveRightButton = widget.NewButtonWithIcon("Remove", theme.NavigateNextIcon(), func() {
-	})
-	lc.moveLeftButton = widget.NewButtonWithIcon("Keep", theme.NavigateBackIcon(), func() {
-	})
+	lc.moveRightButton = widget.NewButtonWithIcon("Remove", theme.NavigateNextIcon(), func() {})
+	lc.moveLeftButton = widget.NewButtonWithIcon("Keep", theme.NavigateBackIcon(), func() {})
+	lc.moveRightButton.Disable()
+	lc.moveLeftButton.Disable()
+	lc.moveRightButton.OnTapped = func() {
+		// Add tag to right list
+		lc.RightItems = append(lc.RightItems, lc.LeftItems[lc.leftSelectionId])
+
+		// Remove tag from left list
+		copy(lc.LeftItems[lc.rightSelectionId:], lc.LeftItems[lc.rightSelectionId+1:])
+		lc.LeftItems = lc.LeftItems[:len(lc.LeftItems)-1]
+
+		lc.container.Refresh()
+	}
+	lc.moveLeftButton.OnTapped = func() {
+		// Add tag to left list
+		lc.LeftItems = append(lc.LeftItems, lc.RightItems[lc.leftSelectionId])
+
+		// Remove tag from right list
+		copy(lc.RightItems[lc.leftSelectionId:], lc.RightItems[lc.leftSelectionId+1:])
+		lc.RightItems = lc.RightItems[:len(lc.RightItems)-1]
+
+		lc.container.Refresh()
+	}
+
 	lc.leftList.OnSelected = func(id widget.ListItemID) {
 		lc.leftSelectionId = id
 		lc.moveRightButton.Enable()
@@ -83,18 +105,18 @@ func (lc *ListChoices) SetRightItems(t []*mastodon.FollowedTag) {
 
 func (lc *ListChoices) CreateRenderer() fyne.WidgetRenderer {
 	buttons := container.NewBorder(
-		container.NewVBox(lc.moveRightButton,lc.moveLeftButton),
+		container.NewVBox(lc.moveRightButton, lc.moveLeftButton),
 		nil, nil, nil)
 	keepBox := container.NewBorder(lc.leftLabel, nil, nil, nil, lc.leftList)
 	// Create filler for the buttons to keep them from being at the very top
 	fill := widget.NewLabel("")
 	buttonBox := container.NewBorder(fill, nil, nil, nil, buttons)
 	removeBox := container.NewBorder(lc.rightLabel, nil, nil, nil, lc.rightList)
-	container := container.NewHBox(keepBox, buttonBox, removeBox)
+	lc.container = container.NewHBox(keepBox, buttonBox, removeBox)
 
 	lcr := listChoicesRenderer{
 		listChoices: lc,
-		container:   container,
+		container:   lc.container,
 	}
 	return lcr
 }
