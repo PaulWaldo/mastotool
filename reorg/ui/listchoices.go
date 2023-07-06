@@ -13,11 +13,11 @@ var _ fyne.Widget = &ListChoices{}
 type ListChoices struct {
 	widget.BaseWidget
 	LeftItems, RightItems []*mastodon.FollowedTag
-	leftLabel, rightLabel *widget.Label
+	LeftLabel, RightLabel *widget.Label
 
-	leftList, rightList               *widget.List
-	moveLeftButton, moveRightButton   *widget.Button
-	leftSelectionId, rightSelectionId widget.ListItemID
+	LeftList, RightList               *widget.List
+	MoveLeftButton, MoveRightButton   *widget.Button
+	LeftSelectionId, RightSelectionId widget.ListItemID
 	container                         *fyne.Container
 }
 
@@ -25,7 +25,7 @@ func NewListChoices() *ListChoices {
 	lc := &ListChoices{}
 	lc.LeftItems = []*mastodon.FollowedTag{}
 	lc.RightItems = []*mastodon.FollowedTag{}
-	lc.leftList = widget.NewList(
+	lc.LeftList = widget.NewList(
 		func() int {
 			return len(lc.LeftItems)
 		},
@@ -36,7 +36,7 @@ func NewListChoices() *ListChoices {
 			o.(*widget.Label).SetText(lc.LeftItems[i].Name)
 		},
 	)
-	lc.rightList = widget.NewList(
+	lc.RightList = widget.NewList(
 		func() int { return len(lc.RightItems) },
 		func() fyne.CanvasObject {
 			return widget.NewLabel("XXXXXXXXXXXXXXX")
@@ -46,48 +46,48 @@ func NewListChoices() *ListChoices {
 		},
 	)
 
-	lc.leftLabel = widget.NewLabel("Left")
-	lc.leftLabel.TextStyle = fyne.TextStyle{Bold: true}
-	lc.leftLabel.Alignment = fyne.TextAlignCenter
+	lc.LeftLabel = widget.NewLabel("Left")
+	lc.LeftLabel.TextStyle = fyne.TextStyle{Bold: true}
+	lc.LeftLabel.Alignment = fyne.TextAlignCenter
 
-	lc.rightLabel = widget.NewLabel("Right")
-	lc.rightLabel.TextStyle = fyne.TextStyle{Bold: true}
-	lc.rightLabel.Alignment = fyne.TextAlignCenter
+	lc.RightLabel = widget.NewLabel("Right")
+	lc.RightLabel.TextStyle = fyne.TextStyle{Bold: true}
+	lc.RightLabel.Alignment = fyne.TextAlignCenter
 
-	lc.moveRightButton = widget.NewButtonWithIcon("Remove", theme.NavigateNextIcon(), func() {})
-	lc.moveLeftButton = widget.NewButtonWithIcon("Keep", theme.NavigateBackIcon(), func() {})
-	lc.moveRightButton.Disable()
-	lc.moveLeftButton.Disable()
-	lc.moveRightButton.OnTapped = func() {
+	lc.MoveRightButton = widget.NewButtonWithIcon("Remove", theme.NavigateNextIcon(), func() {})
+	lc.MoveLeftButton = widget.NewButtonWithIcon("Keep", theme.NavigateBackIcon(), func() {})
+	lc.MoveRightButton.Disable()
+	lc.MoveLeftButton.Disable()
+	lc.MoveRightButton.OnTapped = func() {
 		// Add tag to right list
-		lc.RightItems = append(lc.RightItems, lc.LeftItems[lc.leftSelectionId])
+		lc.RightItems = append(lc.RightItems, lc.LeftItems[lc.LeftSelectionId])
 
 		// Remove tag from left list
-		copy(lc.LeftItems[lc.rightSelectionId:], lc.LeftItems[lc.rightSelectionId+1:])
+		copy(lc.LeftItems[lc.RightSelectionId:], lc.LeftItems[lc.RightSelectionId+1:])
 		lc.LeftItems = lc.LeftItems[:len(lc.LeftItems)-1]
 
 		lc.container.Refresh()
 	}
-	lc.moveLeftButton.OnTapped = func() {
+	lc.MoveLeftButton.OnTapped = func() {
 		// Add tag to left list
-		lc.LeftItems = append(lc.LeftItems, lc.RightItems[lc.leftSelectionId])
+		lc.LeftItems = append(lc.LeftItems, lc.RightItems[lc.LeftSelectionId])
 
 		// Remove tag from right list
-		copy(lc.RightItems[lc.leftSelectionId:], lc.RightItems[lc.leftSelectionId+1:])
+		copy(lc.RightItems[lc.LeftSelectionId:], lc.RightItems[lc.LeftSelectionId+1:])
 		lc.RightItems = lc.RightItems[:len(lc.RightItems)-1]
 
 		lc.container.Refresh()
 	}
 
-	lc.leftList.OnSelected = func(id widget.ListItemID) {
-		lc.leftSelectionId = id
-		lc.moveRightButton.Enable()
-		lc.moveLeftButton.Disable()
+	lc.LeftList.OnSelected = func(id widget.ListItemID) {
+		lc.LeftSelectionId = id
+		lc.MoveRightButton.Enable()
+		lc.MoveLeftButton.Disable()
 	}
-	lc.rightList.OnSelected = func(id widget.ListItemID) {
-		lc.rightSelectionId = id
-		lc.moveLeftButton.Enable()
-		lc.moveRightButton.Disable()
+	lc.RightList.OnSelected = func(id widget.ListItemID) {
+		lc.RightSelectionId = id
+		lc.MoveLeftButton.Enable()
+		lc.MoveRightButton.Disable()
 	}
 	lc.ExtendBaseWidget(lc)
 	return lc
@@ -95,23 +95,23 @@ func NewListChoices() *ListChoices {
 
 func (lc *ListChoices) SetLeftItems(t []*mastodon.FollowedTag) {
 	lc.LeftItems = t
-	lc.leftList.Refresh()
+	lc.LeftList.Refresh()
 }
 
 func (lc *ListChoices) SetRightItems(t []*mastodon.FollowedTag) {
 	lc.RightItems = t
-	lc.rightList.Refresh()
+	lc.RightList.Refresh()
 }
 
 func (lc *ListChoices) CreateRenderer() fyne.WidgetRenderer {
 	buttons := container.NewBorder(
-		container.NewVBox(lc.moveRightButton, lc.moveLeftButton),
+		container.NewVBox(lc.MoveRightButton, lc.MoveLeftButton),
 		nil, nil, nil)
-	keepBox := container.NewBorder(lc.leftLabel, nil, nil, nil, lc.leftList)
+	keepBox := container.NewBorder(lc.LeftLabel, nil, nil, nil, lc.LeftList)
 	// Create filler for the buttons to keep them from being at the very top
 	fill := widget.NewLabel("")
 	buttonBox := container.NewBorder(fill, nil, nil, nil, buttons)
-	removeBox := container.NewBorder(lc.rightLabel, nil, nil, nil, lc.rightList)
+	removeBox := container.NewBorder(lc.RightLabel, nil, nil, nil, lc.RightList)
 	lc.container = container.NewHBox(keepBox, buttonBox, removeBox)
 
 	lcr := listChoicesRenderer{

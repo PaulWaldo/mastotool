@@ -37,8 +37,8 @@ func TestSetFollowedTags_PopulatesList(t *testing.T) {
 			allFollowedTags := createTags("Tag", tt.fields.numFollowedTags)
 			w.SetContent(container)
 			w.Resize(fyne.Size{Width: 400, Height: 400})
-			keepList := ftui.ListChoices.leftList
-			removeList := ftui.ListChoices.rightList
+			keepList := ftui.ListChoices.LeftList
+			removeList := ftui.ListChoices.RightList
 			assert.Equal(t, tt.fields.numFollowedTags, keepList.Length(), "Expecting keep list widget to have %d items, got %d", len(allFollowedTags), keepList.Length())
 			assert.Equal(t, 0, removeList.Length())
 

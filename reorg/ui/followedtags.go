@@ -16,13 +16,13 @@ type FollowedTagsUI struct {
 func (ft *FollowedTagsUI) MakeFollowedTagsUI() fyne.CanvasObject {
 	ft.ListChoices = NewListChoices()
 
-	ft.ListChoices.leftLabel.Text = "To Keep"
-	ft.ListChoices.leftLabel.TextStyle = fyne.TextStyle{Bold: true}
-	ft.ListChoices.leftLabel.Alignment = fyne.TextAlignCenter
+	ft.ListChoices.LeftLabel.Text = "To Keep"
+	ft.ListChoices.LeftLabel.TextStyle = fyne.TextStyle{Bold: true}
+	ft.ListChoices.LeftLabel.Alignment = fyne.TextAlignCenter
 
-	ft.ListChoices.rightLabel.Text = "To Remove"
-	ft.ListChoices.rightLabel.TextStyle = fyne.TextStyle{Bold: true}
-	ft.ListChoices.rightLabel.Alignment = fyne.TextAlignCenter
+	ft.ListChoices.RightLabel.Text = "To Remove"
+	ft.ListChoices.RightLabel.TextStyle = fyne.TextStyle{Bold: true}
+	ft.ListChoices.RightLabel.Alignment = fyne.TextAlignCenter
 
 	ft.ListChoices.LeftItems = ft.KeepTags
 	ft.ListChoices.RightItems = ft.RemoveTags

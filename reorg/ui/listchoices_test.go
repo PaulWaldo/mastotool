@@ -20,14 +20,14 @@ func TestListChoices_DisplaysCorrectItems(t *testing.T) {
 	lc.SetRightItems(rightTags)
 	w.SetContent(container.NewMax(lc))
 	w.Resize(fyne.Size{Width: 400, Height: 400})
-	assert.Equal(t, 3, lc.leftList.Length())
-	assert.Equal(t, 2, lc.rightList.Length())
+	assert.Equal(t, 3, lc.LeftList.Length())
+	assert.Equal(t, 2, lc.RightList.Length())
 	for i, v := range leftTags {
-		got := getListItem(lc.leftList, i).(*widget.Label)
+		got := getListItem(lc.LeftList, i).(*widget.Label)
 		assert.Equal(t, v.Name, got.Text, "Expecting left list item %d to be %s, but got %s", i, v.Name, got.Text)
 	}
 	for i, v := range rightTags {
-		got := getListItem(lc.rightList, i).(*widget.Label)
+		got := getListItem(lc.RightList, i).(*widget.Label)
 		assert.Equal(t, v.Name, got.Text, "Expecting right list item %d to be %s, but got %s", i, v.Name, got.Text)
 	}
 }
@@ -39,18 +39,18 @@ func TestListChoices_ListHeadersAreCorrect(t *testing.T) {
 	w.SetContent(lc)
 	w.Resize(fyne.Size{Width: 400, Height: 400})
 
-	assert.True(t, lc.leftLabel.TextStyle.Bold,
+	assert.True(t, lc.LeftLabel.TextStyle.Bold,
 		"Expecting left label style to be Bold")
 	assert.Equal(t,
-		fyne.TextAlignCenter, lc.leftLabel.Alignment,
+		fyne.TextAlignCenter, lc.LeftLabel.Alignment,
 		"Expecting left label alignment to be %d, but got %d",
-		fyne.TextAlignCenter, lc.leftLabel.Alignment)
-	assert.True(t, lc.rightLabel.TextStyle.Bold,
+		fyne.TextAlignCenter, lc.LeftLabel.Alignment)
+	assert.True(t, lc.RightLabel.TextStyle.Bold,
 		"Expecting right label style to be Bold")
 	assert.Equal(t,
-		fyne.TextAlignCenter, lc.leftLabel.Alignment,
+		fyne.TextAlignCenter, lc.LeftLabel.Alignment,
 		"Expecting right label alignment to be %d, but got %d",
-		fyne.TextAlignCenter, lc.rightLabel.Alignment)
+		fyne.TextAlignCenter, lc.RightLabel.Alignment)
 }
 
 func TestListChoices_TagMovingButtonTapsMoveTags(t *testing.T) {
@@ -63,25 +63,25 @@ func TestListChoices_TagMovingButtonTapsMoveTags(t *testing.T) {
 	ui := container.NewMax(lc)
 	w.SetContent(ui)
 	w.Resize(fyne.Size{Width: 400, Height: 400})
-	assert.Equal(t, len(allFollowedTags), lc.leftList.Length(), "Left List length")
-	assert.True(t, lc.moveRightButton.Disabled(), "Move right button diabled")
-	assert.True(t, lc.moveLeftButton.Disabled(), "Move left button disabled")
+	assert.Equal(t, len(allFollowedTags), lc.LeftList.Length(), "Left List length")
+	assert.True(t, lc.MoveRightButton.Disabled(), "Move right button diabled")
+	assert.True(t, lc.MoveLeftButton.Disabled(), "Move left button disabled")
 
 	// Move all tags from left list to right list
 	for numRemove := 1; numRemove <= len(allFollowedTags); numRemove++ {
-		lc.leftList.Select(0)
-		assert.False(t, lc.moveRightButton.Disabled(), "Move right button should be enabled when left item selected")
-		test.Tap(lc.moveRightButton)
-		assert.Equal(t, numRemove, lc.rightList.Length())
-		assert.Equal(t, len(allFollowedTags)-numRemove, lc.leftList.Length())
+		lc.LeftList.Select(0)
+		assert.False(t, lc.MoveRightButton.Disabled(), "Move right button should be enabled when left item selected")
+		test.Tap(lc.MoveRightButton)
+		assert.Equal(t, numRemove, lc.RightList.Length())
+		assert.Equal(t, len(allFollowedTags)-numRemove, lc.LeftList.Length())
 	}
 
 	// Move all tags back to left list
 	for numRemove := 1; numRemove <= len(allFollowedTags); numRemove++ {
-		lc.rightList.Select(0)
-		assert.False(t, lc.moveLeftButton.Disabled(), "Move left button should be enabled when right item selected")
-		test.Tap(lc.moveLeftButton)
-		assert.Equal(t, numRemove, lc.leftList.Length())
-		assert.Equal(t, len(allFollowedTags)-numRemove, lc.rightList.Length())
+		lc.RightList.Select(0)
+		assert.False(t, lc.MoveLeftButton.Disabled(), "Move left button should be enabled when right item selected")
+		test.Tap(lc.MoveLeftButton)
+		assert.Equal(t, numRemove, lc.LeftList.Length())
+		assert.Equal(t, len(allFollowedTags)-numRemove, lc.RightList.Length())
 	}
 }
