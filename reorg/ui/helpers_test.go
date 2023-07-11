@@ -38,6 +38,9 @@ func createTags(prefix string, n int) []*mastodon.FollowedTag {
 }
 
 func getListItem(l *widget.List, index int) fyne.CanvasObject {
+	if index+1 > l.Length() {
+		panic(fmt.Sprintf("Attemping to access list index %d, but list length is %d", index, l.Length()))
+	}
 	l.ScrollTo(index)
 	listRenderer := test.WidgetRenderer(l)
 	items := listRenderer.Objects()
@@ -48,5 +51,5 @@ func getListItem(l *widget.List, index int) fyne.CanvasObject {
 	listItem := listCanvas[index].(fyne.Widget)
 	listItemRenderer := test.WidgetRenderer(listItem)
 	listItemCanvas := listItemRenderer.Objects()
-	return listItemCanvas[1].(*widget.Label)
+	return listItemCanvas[1] //.(*widget.Label)
 }

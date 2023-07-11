@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/mattn/go-mastodon"
+	"golang.org/x/exp/slices"
 )
 
 var _ fyne.Widget = &ListChoices{}
@@ -60,21 +61,24 @@ func NewListChoices() *ListChoices {
 	lc.MoveLeftButton.Disable()
 	lc.MoveRightButton.OnTapped = func() {
 		// Add tag to right list
-		lc.RightItems = append(lc.RightItems, lc.LeftItems[lc.LeftSelectionId])
+		lc.RightItems = slices.Insert(lc.RightItems, 0, lc.LeftItems[lc.LeftSelectionId])
 
 		// Remove tag from left list
-		copy(lc.LeftItems[lc.RightSelectionId:], lc.LeftItems[lc.RightSelectionId+1:])
-		lc.LeftItems = lc.LeftItems[:len(lc.LeftItems)-1]
+		lc.LeftItems = slices.Delete(lc.LeftItems, lc.LeftSelectionId, lc.LeftSelectionId+1)
+
+		// lc.LeftItems = remove(lc.LeftItems, lc.LeftSelectionId)
 
 		lc.container.Refresh()
 	}
 	lc.MoveLeftButton.OnTapped = func() {
 		// Add tag to left list
-		lc.LeftItems = append(lc.LeftItems, lc.RightItems[lc.LeftSelectionId])
+		lc.LeftItems = slices.Insert(lc.LeftItems, 0, lc.RightItems[lc.RightSelectionId])
+		// append(lc.LeftItems, lc.RightItems[lc.LeftSelectionId])
 
 		// Remove tag from right list
-		copy(lc.RightItems[lc.LeftSelectionId:], lc.RightItems[lc.LeftSelectionId+1:])
-		lc.RightItems = lc.RightItems[:len(lc.RightItems)-1]
+		lc.LeftItems = slices.Delete(lc.LeftItems, lc.LeftSelectionId, lc.LeftSelectionId+1)
+		// copy(lc.RightItems[lc.LeftSelectionId:], lc.RightItems[lc.LeftSelectionId+1:])
+		// lc.RightItems = lc.RightItems[:len(lc.RightItems)-1]
 
 		lc.container.Refresh()
 	}
