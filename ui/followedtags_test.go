@@ -1,9 +1,7 @@
 package ui
 
 import (
-	"fmt"
 	"testing"
-	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/test"
@@ -12,117 +10,76 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func getTagList(n int) []*mastodon.FollowedTag {
-	tags := make([]*mastodon.FollowedTag, n)
-	for i := 0; i < n; i++ {
-		tags[i] = &mastodon.FollowedTag{
-			Name: fmt.Sprintf("Tag%d", i),
-			History: []mastodon.FollowedTagHistory{
-				{
-					Day:      mastodon.UnixTimeString{Time: time.Now()},
-					Accounts: 10 * i,
-					Uses:     100 * i,
-				},
-				{
-					Day:      mastodon.UnixTimeString{Time: time.Now().AddDate(0, 0, -1)},
-					Accounts: 20 * i,
-					Uses:     200 * i,
-				},
-				{
-					Day:      mastodon.UnixTimeString{Time: time.Now().AddDate(0, 0, -2)},
-					Accounts: 30 * i,
-					Uses:     300 * i,
-				},
-			},
-		}
-	}
-	return tags
-}
-
-func getListItem(l *widget.List, index int) fyne.CanvasObject {
-	l.ScrollTo(index)
-	listRenderer := test.WidgetRenderer(l)
-	items := listRenderer.Objects()
-	scrollRenderer := test.WidgetRenderer(items[0].(fyne.Widget))
-	scrollObjs := scrollRenderer.Objects()
-	listContainer := scrollObjs[0].(*fyne.Container)
-	listCanvas := listContainer.Objects
-	listItem := listCanvas[index].(fyne.Widget)
-	listItemRenderer := test.WidgetRenderer(listItem)
-	listItemCanvas := listItemRenderer.Objects()
-	return listItemCanvas[1].(*widget.Label)
-}
-
-func TestFollowedTagsUI_MakeFollowedTagsUI(t *testing.T) {
+func TestMakeFollowedTagsUI_PopulatesList(t *testing.T) {
 	type fields struct {
-		followedTags []*mastodon.FollowedTag
+		numFollowedTags int
 	}
-	numFollowedTags := 3
-	allFollowedTags := getTagList(numFollowedTags)
 	tests := []struct {
 		name   string
 		fields fields
 	}{
 		{
-			name: "Initial tags in keep list, none in remove list",
+			name: "with 3 tags",
 			fields: fields{
-				followedTags: allFollowedTags,
+				numFollowedTags: 3,
 			},
 		},
 	}
-	for _, tt := range tests {
+	for i := range tests {
+		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			a := test.NewApp()
 			w := a.NewWindow("")
-			ui := NewFollowedTagsUI(tt.fields.followedTags)
-			w.SetContent(ui.MakeFollowedTagsUI())
+			keepTags := createTags("Tag", tt.fields.numFollowedTags)
+			removeTags := []*mastodon.FollowedTag{}
+			ma := myApp{keepTags: keepTags, removeTags: removeTags}
+			container := ma.MakeFollowedTagsUI()
+			allFollowedTags := createTags("Tag", tt.fields.numFollowedTags)
+			w.SetContent(container)
 			w.Resize(fyne.Size{Width: 400, Height: 400})
-			assert.Equal(t, len(allFollowedTags), ui.keepListWidget.Length(), "Expecting keep list widget to have %d items, got %d", len(allFollowedTags), ui.keepListWidget.Length())
-			assert.Equal(t, 0, ui.removeListWidget.Length())
+			keepList := ma.listChoices.LeftList
+			removeList := ma.listChoices.RightList
+			assert.Equal(t, tt.fields.numFollowedTags, keepList.Length(), "Expecting keep list widget to have %d items, got %d", len(allFollowedTags), keepList.Length())
+			assert.Equal(t, 0, removeList.Length())
 
 			for i, v := range allFollowedTags {
-				got := getListItem(ui.keepListWidget, i).(*widget.Label)
+				got := getListItem(keepList, i).(*widget.Label)
 				assert.Equal(t, v.Name, got.Text, "Expecting keep list item %d to be %s, but got %s", i, v.Name, got.Text)
 			}
 
 			// Initial state of Unfollow button should be disabled
-			assert.True(t, ui.unfollowButton.Disabled(), "Initial state of Unfollow button should be disabled")
+			assert.True(t, ma.unfollowButton.Disabled(), "Initial state of Unfollow button should be disabled")
 		})
 	}
 }
 
-func TestFollowedTagsUI_TagMovingButtonPressesMoveTags(t *testing.T) {
-	numFollowedTags := 2
-	allFollowedTags := getTagList(numFollowedTags)
+func TestFollowedTagsUI_TagMovingButtonPressesChangesUnfollowButtonEnabled(t *testing.T) {
+	// 	// numFollowedTags := 2
+	allFollowedTags := createTags("Tag", 3)
 	a := test.NewApp()
 	w := a.NewWindow("")
-	ui := NewFollowedTagsUI(allFollowedTags)
-	w.SetContent(ui.MakeFollowedTagsUI())
+	ma := myApp{}
+	w.SetContent(ma.MakeFollowedTagsUI())
+	ma.SetFollowedTags(allFollowedTags)
 	w.Resize(fyne.Size{Width: 400, Height: 400})
-	assert.Equal(t, len(allFollowedTags), ui.keepListWidget.Length())
-	assert.True(t, ui.removeButton.Disabled())
-	assert.True(t, ui.keepButton.Disabled())
-	assert.True(t, ui.unfollowButton.Disabled())
+	assert.Equal(t, len(allFollowedTags), ma.listChoices.LeftList.Length())
+	assert.True(t, ma.unfollowButton.Disabled())
 
-	// Move all tags from keep list to remove list
-	for numRemove := 1; numRemove <= len(allFollowedTags); numRemove++ {
-		ui.keepListWidget.Select(0)
-		assert.False(t, ui.removeButton.Disabled())
-		test.Tap(ui.removeButton)
-		assert.Equal(t, numRemove, ui.removeListWidget.Length())
-		assert.Equal(t, len(allFollowedTags)-numRemove, ui.keepListWidget.Length())
-		assert.False(t, ui.unfollowButton.Disabled())
+	for i := 0; i < 2; i++ {
+		// Move one tag to remove list. Unfollow button should be enabled
+		ma.listChoices.LeftList.Select(0)
+		test.Tap(ma.listChoices.MoveRightButton)
+		assert.False(t, ma.unfollowButton.Disabled())
 	}
+	assert.Equal(t, 2, ma.listChoices.RightList.Length())
 
-	// Move all tags back to keep list
-	for numRemove := 1; numRemove <= len(allFollowedTags); numRemove++ {
-		ui.removeListWidget.Select(0)
-		assert.False(t, ui.unfollowButton.Disabled())
-		ui.removeListWidget.Select(0)
-		assert.False(t, ui.keepButton.Disabled())
-		test.Tap(ui.keepButton)
-		assert.Equal(t, numRemove, ui.keepListWidget.Length())
-		assert.Equal(t, len(allFollowedTags)-numRemove, ui.removeListWidget.Length())
-	}
-	assert.True(t, ui.unfollowButton.Disabled())
+	// Move a tag back to left. Unfollow button should be enabled
+	ma.listChoices.RightList.Select(0)
+	test.Tap(ma.listChoices.MoveLeftButton)
+	assert.False(t, ma.unfollowButton.Disabled())
+
+	// Move last tag back to left. Unfollow button should be disabled
+	ma.listChoices.RightList.Select(0)
+	test.Tap(ma.listChoices.MoveLeftButton)
+	assert.True(t, ma.unfollowButton.Disabled())
 }
