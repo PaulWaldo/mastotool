@@ -20,6 +20,7 @@ type myApp struct {
 	keepTags, removeTags []*mastodon.FollowedTag
 	listChoices          *ListChoices
 	unfollowButton       *widget.Button
+	refreshButton        *widget.Button
 }
 
 func Run() {
@@ -39,13 +40,11 @@ func Run() {
 // getFollowedTags gets the list of followed tags and populates the keepTags and removeTags based on this
 func (ma *myApp) getFollowedTags() {
 	c := NewClientFromPrefs(ma.prefs)
-	// var err error
 	tags, err := c.GetFollowedTags(context.Background(), nil)
 	if err != nil {
 		tags = []*mastodon.FollowedTag{}
 		dialog.ShowError(err, ma.window)
 	}
-	// ma.listChoices.RightItems = []*mastodon.FollowedTag{}
 	ma.SetFollowedTags(tags)
 }
 

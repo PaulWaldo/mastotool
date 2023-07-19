@@ -1,6 +1,9 @@
 package ui
 
 import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -82,4 +85,38 @@ func TestFollowedTagsUI_TagMovingButtonPressesChangesUnfollowButtonEnabled(t *te
 	ma.listChoices.RightList.Select(0)
 	test.Tap(ma.listChoices.MoveLeftButton)
 	assert.True(t, ma.unfollowButton.Disabled())
+}
+
+func TestFollowedTagsUI_TappingRefreshButtonRepopulatesTags(t *testing.T) {
+	a := test.NewApp()
+	w := a.NewWindow("")
+	keepTags := createTags("KTag", 3)
+	removeTags := createTags("RTag", 1)
+	ma := myApp{keepTags: keepTags, removeTags: removeTags, window: w, app: a}
+	w.SetContent(ma.MakeFollowedTagsUI())
+	w.Resize(fyne.Size{Width: 400, Height: 400})
+	assert.Equal(t, 3, ma.listChoices.LeftList.Length())
+	assert.Equal(t, 1, ma.listChoices.RightList.Length())
+
+	serv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		expectedPath := "/api/v1/followed_tags"
+		if r.URL.Path != expectedPath {
+			t.Fatalf("unexpected request path %s, expecting %s", r.URL.Path, expectedPath)
+			return
+		}
+		resp := []mastodon.FollowedTag{{Name: "NewTag", Following: true}}
+		enc := json.NewEncoder(w)
+		err := enc.Encode(resp)
+		if err != nil {
+			t.Fatalf("writing mocked response: %s", err)
+		}
+	}))
+	defer serv.Close()
+	ma.prefs = NewPreferences(a)
+	err := ma.prefs.MastodonServer.Set(serv.URL)
+	assert.NoError(t, err)
+	test.Tap(ma.refreshButton)
+
+	assert.Equal(t, 1, ma.listChoices.LeftList.Length(), "After refresh, expecting 1 item, got %d", ma.listChoices.LeftList.Length())
+	assert.Equal(t, 0, ma.listChoices.RightList.Length(), "After refresh, expecting 0 items, got %d", ma.listChoices.RightList.Length())
 }
