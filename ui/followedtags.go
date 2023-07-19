@@ -69,7 +69,12 @@ func (ma *myApp) MakeFollowedTagsUI() fyne.CanvasObject {
 			}, ma.window)
 	})
 	ma.unfollowButton.Disable()
-	return container.NewBorder(nil, ma.unfollowButton, nil, nil, ma.listChoices)
+
+	ma.refreshButton = widget.NewButtonWithIcon("Refresh", theme.ViewRefreshIcon(), func() {
+		ma.getFollowedTags()
+	})
+	bottom := container.NewBorder(nil, nil, nil, ma.refreshButton, ma.unfollowButton)
+	return container.NewBorder(nil, bottom, nil, nil, ma.listChoices)
 }
 
 func (ma *myApp) SetFollowedTags(t []*mastodon.FollowedTag) {
