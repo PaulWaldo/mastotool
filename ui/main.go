@@ -7,6 +7,8 @@ import (
 	"github.com/mattn/go-mastodon"
 )
 
+const AppID = "com.github.PaulWaldo.mastotool"
+
 type myApp struct {
 	prefs                Preferences
 	app                  fyne.App
@@ -19,11 +21,14 @@ type myApp struct {
 
 func Run() {
 	ma := myApp{}
-	ma.app = app.NewWithID("com.github.PaulWaldo.mastotool")
+	ma.app = app.NewWithID(AppID)
 	ma.prefs = NewPreferences(ma.app)
 	ma.window = ma.app.NewWindow("MastoTool")
 	ma.window.SetMainMenu(fyne.NewMainMenu(
-		fyne.NewMenu("File", fyne.NewMenuItem("Authenticate", ma.authenticate))),
+		fyne.NewMenu("Server",
+			fyne.NewMenuItem("Log In", ma.authenticate),
+			fyne.NewMenuItem("Log Out", ma.forgetCredentials),
+		)),
 	)
 	ma.window.SetContent(ma.MakeFollowedTagsUI())
 	ma.window.Resize(fyne.Size{Width: 400, Height: 400})

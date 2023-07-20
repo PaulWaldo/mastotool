@@ -6,6 +6,13 @@ import (
 	"github.com/mattn/go-mastodon"
 )
 
+const (
+	PrefKeyServer       = "MastodonServer"
+	PrefKeyAccessToken  = "AcessToken"
+	PrefKeyClientID     = "ClientID"
+	PrefKeyClientSecret = "ClientSecret"
+)
+
 // Preferences stores user data locally between application runs
 type Preferences struct {
 	MastodonServer binding.String // User's Mastodon server
@@ -31,9 +38,16 @@ func NewClientFromPrefs(p Preferences) *mastodon.Client {
 
 func NewPreferences(a fyne.App) Preferences {
 	return Preferences{
-		MastodonServer: binding.BindPreferenceString("MastodonServer", a.Preferences()),
-		AccessToken:    binding.BindPreferenceString("AcessToken", a.Preferences()),
-		ClientID:       binding.BindPreferenceString("ClientID", a.Preferences()),
-		ClientSecret:   binding.BindPreferenceString("ClientSecret", a.Preferences()),
+		MastodonServer: binding.BindPreferenceString(PrefKeyServer, a.Preferences()),
+		AccessToken:    binding.BindPreferenceString(PrefKeyAccessToken, a.Preferences()),
+		ClientID:       binding.BindPreferenceString(PrefKeyClientID, a.Preferences()),
+		ClientSecret:   binding.BindPreferenceString(PrefKeyClientSecret, a.Preferences()),
 	}
+}
+
+func (p *Preferences) forgetCredentials() {
+	_ = p.AccessToken.Set("")
+	_ = p.ClientID.Set("")
+	_ = p.ClientSecret.Set("")
+	_ = p.MastodonServer.Set("")
 }

@@ -52,7 +52,15 @@ func (ma *myApp) authenticate() {
 	}, ma.window)
 	form.Resize(fyne.Size{Width: 300, Height: 300})
 	form.Show()
+}
 
+func (ma *myApp) forgetCredentials() {
+	dialog.NewConfirm("Log out", "Logging out will remove your authentication token", func(b bool) {
+		if b {
+			ma.prefs.forgetCredentials()
+			ma.SetFollowedTags([]*mastodon.FollowedTag{})
+		}
+	}, ma.window).Show()
 }
 
 // getAuthCode allows the user to input the Authentication Token provided by Mastodon into the preferences
