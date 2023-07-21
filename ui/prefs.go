@@ -13,8 +13,8 @@ const (
 	PrefKeyClientSecret = "ClientSecret"
 )
 
-// Preferences stores user data locally between application runs
-type Preferences struct {
+// AppPrefs stores user data locally between application runs
+type AppPrefs struct {
 	MastodonServer binding.String // User's Mastodon server
 	AccessToken    binding.String // Token provided by Mastodon
 	ClientID       binding.String
@@ -22,7 +22,7 @@ type Preferences struct {
 }
 
 // NewClientFromPrefs creates a new Mastodon client from user preferences
-func NewClientFromPrefs(p Preferences) *mastodon.Client {
+func NewClientFromPrefs(p AppPrefs) *mastodon.Client {
 	server, _ := p.MastodonServer.Get()
 	clientID, _ := p.ClientID.Get()
 	clientSecret, _ := p.ClientSecret.Get()
@@ -36,8 +36,8 @@ func NewClientFromPrefs(p Preferences) *mastodon.Client {
 	return mastodon.NewClient(conf)
 }
 
-func NewPreferences(a fyne.App) Preferences {
-	return Preferences{
+func NewPreferences(a fyne.App) AppPrefs {
+	return AppPrefs{
 		MastodonServer: binding.BindPreferenceString(PrefKeyServer, a.Preferences()),
 		AccessToken:    binding.BindPreferenceString(PrefKeyAccessToken, a.Preferences()),
 		ClientID:       binding.BindPreferenceString(PrefKeyClientID, a.Preferences()),
@@ -45,9 +45,10 @@ func NewPreferences(a fyne.App) Preferences {
 	}
 }
 
-func (p *Preferences) forgetCredentials() {
-	_ = p.AccessToken.Set("")
-	_ = p.ClientID.Set("")
-	_ = p.ClientSecret.Set("")
-	_ = p.MastodonServer.Set("")
+func ClearCredentialsPrefs() {
+	p := fyne.CurrentApp().Preferences()
+	p.RemoveValue(PrefKeyAccessToken)
+	p.RemoveValue(PrefKeyClientID)
+	p.RemoveValue(PrefKeyClientSecret)
+	p.RemoveValue(PrefKeyServer)
 }

@@ -42,12 +42,6 @@ func (ma *myApp) authenticate() {
 				return
 			}
 			ma.getAuthCode()
-			c := NewClientFromPrefs(ma.prefs)
-			_, err = c.VerifyAppCredentials(context.Background())
-			if err != nil {
-				dialog.NewError(err, ma.window).Show()
-				fyne.LogError("In Authenticate menu, Authenticating token", err)
-			}
 		}
 	}, ma.window)
 	form.Resize(fyne.Size{Width: 300, Height: 300})
@@ -55,9 +49,10 @@ func (ma *myApp) authenticate() {
 }
 
 func (ma *myApp) forgetCredentials() {
-	dialog.NewConfirm("Log out", "Logging out will remove your authentication token", func(b bool) {
+	dialog.NewConfirm("Log out", "Logging out will remove your authentication data", func(b bool) {
 		if b {
-			ma.prefs.forgetCredentials()
+			ClearCredentialsPrefs()
+			ma.setAuthMenuStatus()
 			ma.SetFollowedTags([]*mastodon.FollowedTag{})
 		}
 	}, ma.window).Show()
@@ -84,12 +79,8 @@ func (ma *myApp) getAuthCode() {
 					return
 				}
 				_ = ma.prefs.AccessToken.Set(c.Config.AccessToken)
-				// err = ma.getFollowedTags()
-				// if err != nil {
-				// 	dialog.NewError(err, w).Show()
-				// 	fyne.LogError("Getting followed tags after auth", err)
-				// 	return
-				// }
+				ma.setAuthMenuStatus()
+				ma.refreshFollowedTags()
 			}
 		},
 		ma.window).Show()

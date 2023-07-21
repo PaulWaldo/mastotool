@@ -63,14 +63,14 @@ func (ma *myApp) MakeFollowedTagsUI() fyne.CanvasObject {
 							"Tags successfully unfollowed",
 							ma.window).Show()
 					}
-					ma.getFollowedTags()
+					ma.refreshFollowedTags()
 				}
 			}, ma.window)
 	})
 	ma.unfollowButton.Disable()
 
 	ma.refreshButton = widget.NewButtonWithIcon("Refresh", theme.ViewRefreshIcon(), func() {
-		ma.getFollowedTags()
+		ma.refreshFollowedTags()
 	})
 	bottom := container.NewBorder(nil, nil, nil, ma.refreshButton, ma.unfollowButton)
 	return container.NewBorder(nil, bottom, nil, nil, ma.listChoices)
@@ -106,14 +106,17 @@ func (ma *myApp) RemoveFollowedTags(w fyne.Window) func() {
 						"Tags successfully unfollowed",
 						w).Show()
 				}
-				ma.getFollowedTags()
+				ma.refreshFollowedTags()
 			}
 		}, w)
 	}
 }
 
-// getFollowedTags gets the list of followed tags and populates the keepTags and removeTags based on this
-func (ma *myApp) getFollowedTags() {
+// refreshFollowedTags gets the list of followed tags and populates the keepTags and removeTags based on this
+func (ma *myApp) refreshFollowedTags() {
+	if !ma.isLoggedIn() {
+		return
+	}
 	c := NewClientFromPrefs(ma.prefs)
 	tags, err := c.GetFollowedTags(context.Background(), nil)
 	if err != nil {
@@ -121,6 +124,27 @@ func (ma *myApp) getFollowedTags() {
 		dialog.ShowError(err, ma.window)
 	}
 	ma.SetFollowedTags(tags)
+}
+
+func (ma *myApp) isLoggedIn() bool {
+	s, err := ma.prefs.MastodonServer.Get()
+	if err != nil || len(s) == 0 {
+		return false
+	}
+	s, err = ma.prefs.AccessToken.Get()
+	if err != nil || len(s) == 0 {
+		return false
+	}
+	s, err = ma.prefs.ClientID.Get()
+	if err != nil || len(s) == 0 {
+		return false
+	}
+	s, err = ma.prefs.ClientSecret.Get()
+	if err != nil || len(s) == 0 {
+		return false
+	}
+
+	return true
 }
 
 // makeRemoveConfirmUI creates the UI for the tag removal confirmation action
