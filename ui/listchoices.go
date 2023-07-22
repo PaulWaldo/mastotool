@@ -62,42 +62,46 @@ func NewListChoices() *ListChoices {
 	lc.MoveRightButton.Disable()
 	lc.MoveLeftButton.Disable()
 	lc.MoveRightButton.OnTapped = func() {
+		if lc.LeftSelectionId > lc.LeftList.Length()-1 {
+			log.Printf("Refusing to attempt to right move item #%d when list length is only %d",
+				lc.LeftSelectionId, lc.LeftList.Length())
+			return
+		}
 		// Add tag to right list
 		lc.RightItems = slices.Insert(lc.RightItems, 0, lc.LeftItems[lc.LeftSelectionId])
 
 		// Remove tag from left list
 		lc.LeftItems = slices.Delete(lc.LeftItems, lc.LeftSelectionId, lc.LeftSelectionId+1)
 
-		lc.container.Refresh()
+		lc.RightList.UnselectAll()
+		lc.Refresh()
+		if lc.LeftSelectionId > lc.LeftList.Length()-1 {
+			lc.LeftList.Select(lc.LeftList.Length() - 1)
+		}
+		if lc.LeftList.Length() == 0 {
+			lc.MoveRightButton.Disable()
+		}
 	}
 	lc.MoveLeftButton.OnTapped = func() {
-		log.Println("Move left button tapped: Before")
-		log.Println("LeftItems:")
-		for _, t := range lc.LeftItems {
-			log.Printf("\t%s\n", t.Name)
+		if lc.RightSelectionId > lc.RightList.Length()-1 {
+			log.Printf("Refusing to attempt to left move item #%d when list length is only %d",
+				lc.RightSelectionId, lc.RightList.Length())
+			return
 		}
-		log.Println("RightItems:")
-		for _, t := range lc.RightItems {
-			log.Printf("\t%s\n", t.Name)
-		}
-		log.Printf("Left SelectID: %d, Right Select ID: %d\n", lc.LeftSelectionId, lc.RightSelectionId)
 		// Add tag to left list
 		lc.LeftItems = slices.Insert(lc.LeftItems, 0, lc.RightItems[lc.RightSelectionId])
 
 		// Remove tag from right list
 		lc.RightItems = slices.Delete(lc.RightItems, lc.RightSelectionId, lc.RightSelectionId+1)
 
-		log.Println("After move:")
-		log.Println("LeftItems:")
-		for _, t := range lc.LeftItems {
-			log.Printf("\t%s\n", t.Name)
+		lc.LeftList.UnselectAll()
+		lc.Refresh()
+		if lc.RightSelectionId > lc.RightList.Length()-1 {
+			lc.RightList.Select(lc.RightList.Length() - 1)
 		}
-		log.Println("RightItems:")
-		for _, t := range lc.RightItems {
-			log.Printf("\t%s\n", t.Name)
+		if lc.RightList.Length() == 0 {
+			lc.MoveLeftButton.Disable()
 		}
-		log.Println()
-		lc.container.Refresh()
 	}
 
 	lc.LeftList.OnSelected = func(id widget.ListItemID) {

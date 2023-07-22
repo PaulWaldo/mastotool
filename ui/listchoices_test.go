@@ -12,6 +12,7 @@ import (
 )
 
 func TestListChoices_DisplaysCorrectItems(t *testing.T) {
+	t.Parallel()
 	a := test.NewApp()
 	w := a.NewWindow("")
 	leftTags := createTags("Left", 3)
@@ -34,6 +35,7 @@ func TestListChoices_DisplaysCorrectItems(t *testing.T) {
 }
 
 func TestListChoices_ListHeadersAreCorrect(t *testing.T) {
+	t.Parallel()
 	a := test.NewApp()
 	w := a.NewWindow("")
 	lc := NewListChoices()
@@ -55,6 +57,7 @@ func TestListChoices_ListHeadersAreCorrect(t *testing.T) {
 }
 
 func TestListChoices_TagMovingButtonTapsMoveTags(t *testing.T) {
+	t.Parallel()
 	numFollowedTags := 2
 	allFollowedTags := createTags("Tag", numFollowedTags)
 	a := test.NewApp()
@@ -92,14 +95,10 @@ func TestListChoices_TagMovingButtonTapsMoveTags(t *testing.T) {
 	assert.Equal(t, expectedRightLen, lc.RightList.Length())
 	// Move all tags back to left list
 	for numRemove := 0; numRemove < len(allFollowedTags); numRemove++ {
-		t.Logf("Item to remove %d", numRemove)
 		selectID := len(allFollowedTags) - numRemove - 1
-		t.Logf("Right selecting %d", selectID)
 		lc.RightList.Select(selectID)
 		assert.False(t, lc.MoveLeftButton.Disabled(), "Move left button should be enabled when right item selected")
 		test.Tap(lc.MoveLeftButton)
-		t.Log("Moved left")
-		t.Logf("Left length: %d Right Length %d", lc.LeftList.Length(), lc.RightList.Length())
 		expectedLeftLen++
 		expectedRightLen--
 		assert.Equal(t, expectedLeftLen, lc.LeftList.Length())
@@ -109,6 +108,7 @@ func TestListChoices_TagMovingButtonTapsMoveTags(t *testing.T) {
 }
 
 func TestListChoices_TagMovingButtonsMoveTagsSelectingFirstListItems(t *testing.T) {
+	t.Parallel()
 	tags := []*mastodon.FollowedTag{
 		{Name: "Tag1"},
 		{Name: "Tag2"},
@@ -155,6 +155,7 @@ func TestListChoices_TagMovingButtonsMoveTagsSelectingFirstListItems(t *testing.
 	}
 }
 func TestListChoices_TagMovingButtonsMoveTagsSelectingLastListItems(t *testing.T) {
+	t.Parallel()
 	tags := []*mastodon.FollowedTag{
 		{Name: "Tag1"},
 		{Name: "Tag2"},
@@ -198,4 +199,39 @@ func TestListChoices_TagMovingButtonsMoveTagsSelectingLastListItems(t *testing.T
 		l := getListItem(lc.LeftList, i).(*widget.Label)
 		assert.Equal(t, tags[i].Name, l.Text)
 	}
+}
+
+func TestListChoices_MovingLastTagToRightUpdatesSelection(t *testing.T) {
+	t.Parallel()
+	tags := createTags("Tag", 2)
+	a := test.NewApp()
+	w := a.NewWindow("")
+	lc := NewListChoices()
+	lc.SetLeftItems(tags)
+	ui := container.NewMax(lc)
+	w.SetContent(ui)
+	w.Resize(fyne.Size{Width: 400, Height: 400})
+
+	lc.LeftList.Select(1)
+	test.Tap(lc.MoveRightButton)
+	// Selected item should be the new last entry in the list and moving again should not panic
+	test.Tap(lc.MoveRightButton)
+	assert.True(t, lc.MoveRightButton.Disabled(), "Move right should be disabled")
+}
+func TestListChoices_MovingLastTagToLeftUpdatesSelection(t *testing.T) {
+	t.Parallel()
+	tags := createTags("Tag", 2)
+	a := test.NewApp()
+	w := a.NewWindow("")
+	lc := NewListChoices()
+	lc.SetRightItems(tags)
+	ui := container.NewMax(lc)
+	w.SetContent(ui)
+	w.Resize(fyne.Size{Width: 400, Height: 400})
+
+	lc.RightList.Select(1)
+	test.Tap(lc.MoveLeftButton)
+	// Selected item should be the new last entry in the list and moving again should not panic
+	test.Tap(lc.MoveLeftButton)
+	assert.True(t, lc.MoveLeftButton.Disabled(), "Move left should be disabled")
 }
