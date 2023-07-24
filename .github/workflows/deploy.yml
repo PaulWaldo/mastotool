@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     # `if` required because a workflow run is triggered regardless of
     # the result of the previous workflow (see the documentation page)
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    # if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Install required packages
