@@ -1,0 +1,47 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: Test # Reuse the name of your tests workflow
+    branches: [develop, "*"]
+    types: completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # `if` required because a workflow run is triggered regardless of
+    # the result of the previous workflow (see the documentation page)
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Install required packages
+        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev xorg-dev
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.x
+
+      - name: Build the Go application
+        run: go build -o myapp
+
+      - name: Build and release executables
+        run: |
+          GOOS=darwin GOARCH=amd64 go build -o MastoTool
+          GOOS=windows GOARCH=amd64 go build -o MastoTool.exe
+          GOOS=linux GOARCH=amd64 go build -o mastotool
+
+      - name: Upload executables as artifacts
+        if: always() # Upload executables regardless of build success
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-artifacts
+          path: |
+            MastoTool
+            MastoTool.exe
+            mastotool
