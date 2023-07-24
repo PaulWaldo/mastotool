@@ -89,7 +89,7 @@ func TestFollowedTagsUI_TagMovingButtonPressesChangesUnfollowButtonEnabled(t *te
 }
 
 func TestFollowedTagsUI_TappingRefreshButtonRepopulatesTags(t *testing.T) {
-	// t.Parallel()
+	t.Parallel()
 	a := test.NewApp()
 	w := a.NewWindow("")
 	keepTags := createTags("KTag", 3)
