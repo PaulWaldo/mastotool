@@ -78,7 +78,7 @@ func NewListChoices() *ListChoices {
 			lc.LeftList.Select(lc.LeftList.Length() - 1)
 		}
 		if lc.LeftList.Length() == 0 {
-			lc.MoveRightButton.Disable()
+			lc.RightList.Select(0)
 		}
 	}
 	lc.MoveLeftButton.OnTapped = func() {
@@ -99,7 +99,7 @@ func NewListChoices() *ListChoices {
 			lc.RightList.Select(lc.RightList.Length() - 1)
 		}
 		if lc.RightList.Length() == 0 {
-			lc.MoveLeftButton.Disable()
+			lc.LeftList.Select(0)
 		}
 	}
 

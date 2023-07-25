@@ -79,15 +79,8 @@ func TestListChoices_TagMovingButtonTapsMoveTags(t *testing.T) {
 		assert.Equal(t, numRemove, lc.RightList.Length())
 		assert.Equal(t, len(allFollowedTags)-numRemove, lc.LeftList.Length())
 	}
-
-	// // Move all tags back to left list
-	// for numRemove := 1; numRemove <= len(allFollowedTags); numRemove++ {
-	// 	lc.RightList.Select(0)
-	// 	assert.False(t, lc.MoveLeftButton.Disabled(), "Move left button should be enabled when right item selected")
-	// 	test.Tap(lc.MoveLeftButton)
-	// 	assert.Equal(t, numRemove, lc.LeftList.Length())
-	// 	assert.Equal(t, len(allFollowedTags)-numRemove, lc.RightList.Length())
-	// }
+	assert.True(t, lc.MoveRightButton.Disabled(), "Move right button diabled")
+	assert.False(t, lc.MoveLeftButton.Disabled(), "Move left button disabled")
 
 	expectedLeftLen := 0
 	expectedRightLen := len(allFollowedTags)
@@ -103,9 +96,9 @@ func TestListChoices_TagMovingButtonTapsMoveTags(t *testing.T) {
 		expectedRightLen--
 		assert.Equal(t, expectedLeftLen, lc.LeftList.Length())
 		assert.Equal(t, expectedRightLen, lc.RightList.Length())
-
 	}
-}
+	assert.False(t, lc.MoveRightButton.Disabled(), "Move right button diabled")
+	assert.True(t, lc.MoveLeftButton.Disabled(), "Move left button disabled")}
 
 func TestListChoices_TagMovingButtonsMoveTagsSelectingFirstListItems(t *testing.T) {
 	t.Parallel()
