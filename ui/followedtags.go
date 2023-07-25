@@ -82,7 +82,7 @@ func (ma *myApp) SetFollowedTags(t []*mastodon.FollowedTag) {
 	}
 	ma.listChoices.SetLeftItems(t)
 	ma.listChoices.SetRightItems([]*mastodon.FollowedTag{})
-	ma.listChoices.container.Refresh()
+	ma.listChoices.Refresh()
 }
 
 // RemoveFollowedTags removes the given list of tags from the user's following list.
