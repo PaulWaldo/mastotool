@@ -21,7 +21,6 @@ type ListChoices struct {
 	LeftList, RightList               *widget.List
 	MoveLeftButton, MoveRightButton   *widget.Button
 	LeftSelectionId, RightSelectionId widget.ListItemID
-	container                         *fyne.Container
 }
 
 func NewListChoices() *ListChoices {
@@ -137,39 +136,7 @@ func (lc *ListChoices) CreateRenderer() fyne.WidgetRenderer {
 	fill := widget.NewLabel("")
 	buttonBox := container.NewBorder(fill, nil, nil, nil, buttons)
 	removeBox := container.NewBorder(lc.RightLabel, nil, nil, nil, lc.RightList)
-	lc.container = container.NewHBox(keepBox, buttonBox, removeBox)
+	container := container.NewHBox(keepBox, buttonBox, removeBox)
 
-	lcr := listChoicesRenderer{
-		listChoices: lc,
-		container:   lc.container,
-	}
-	return lcr
-}
-
-var _ fyne.WidgetRenderer = listChoicesRenderer{}
-
-type listChoicesRenderer struct {
-	listChoices *ListChoices
-	container   *fyne.Container
-}
-
-func (lcr listChoicesRenderer) Destroy() {
-}
-
-func (lcr listChoicesRenderer) Layout(s fyne.Size) {
-	lcr.container.Resize(s)
-}
-
-func (lcr listChoicesRenderer) MinSize() fyne.Size {
-	return lcr.container.MinSize()
-}
-
-func (lcr listChoicesRenderer) Objects() []fyne.CanvasObject {
-	return []fyne.CanvasObject{
-		lcr.container,
-	}
-}
-
-func (lcr listChoicesRenderer) Refresh() {
-	lcr.container.Refresh()
+	return widget.NewSimpleRenderer(container)
 }
