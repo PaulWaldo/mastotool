@@ -37,3 +37,32 @@ jobs:
 
       - name: Test
         run: go test -v ./...
+
+      - name: Build and release executables
+        # if: startswith(github.ref,'refs/heads/master')
+        if: startswith(github.ref,'feature/deployment')
+        run: |
+          GOOS=darwin GOARCH=amd64 go build -o MastoTool
+          GOOS=windows GOARCH=amd64 go build -o MastoTool.exe
+          GOOS=linux GOARCH=amd64 go build -o mastotool
+
+      - name: Upload executables as artifacts
+        if: startswith(github.ref,'refs/heads/master')
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-artifacts
+          path: |
+            MastoTool
+            MastoTool.exe
+            mastotool
+      # - name: Trigger Deploy job
+      #   # runs-on: []
+      #   # container: xyz
+      #   if: startswith(github.ref,'refs/heads/master')
+      #     steps:
+      #     #   - name: Repo dispatch
+      #     #     uses: peter-evans/repository-dispatch@v2
+      #     #     with:
+      #     #       token: PAT
+      #     #       repository:
+      #     #       event-type: trigger-deployment
