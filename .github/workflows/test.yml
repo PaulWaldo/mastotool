@@ -40,14 +40,14 @@ jobs:
 
       - name: Build and release executables
         # if: startswith(github.ref,'refs/heads/master')
-        if: startswith(github.ref,'feature/deployment')
+        # if: startswith(github.ref,'feature/deployment')
         run: |
           GOOS=darwin GOARCH=amd64 go build -o MastoTool
           GOOS=windows GOARCH=amd64 go build -o MastoTool.exe
           GOOS=linux GOARCH=amd64 go build -o mastotool
 
       - name: Upload executables as artifacts
-        if: startswith(github.ref,'refs/heads/master')
+        # if: startswith(github.ref,'refs/heads/master')
         uses: actions/upload-artifact@v3
         with:
           name: release-artifacts
