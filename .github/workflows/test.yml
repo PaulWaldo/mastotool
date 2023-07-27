@@ -42,7 +42,8 @@ jobs:
       - name: Release
         # if: startswith(github.ref,'refs/heads/master')
         # if: startswith(github.ref,'feature/deployment')
-        run: ls -larth
+        run: |
+          ls -larth
           GOOS=darwin GOARCH=amd64 go build -o MastoTool
           GOOS=windows GOARCH=amd64 go build -o MastoTool.exe
           GOOS=linux GOARCH=amd64 go build -o mastotool
