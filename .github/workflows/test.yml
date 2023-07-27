@@ -41,8 +41,7 @@ jobs:
       - name: Release
         # if: startswith(github.ref,'refs/heads/master')
         # if: startswith(github.ref,'feature/deployment')
-        run: |
-          ls -larth
+        run: ls -larth
           GOOS=darwin GOARCH=amd64 go build -o MastoTool
           GOOS=windows GOARCH=amd64 go build -o MastoTool.exe
           GOOS=linux GOARCH=amd64 go build -o mastotool
@@ -52,8 +51,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: release-artifacts
-          path: |
-            MastoTool
+          path: MastoTool
             MastoTool.exe
             mastotool
       # - name: Trigger Deploy job
