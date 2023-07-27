@@ -38,10 +38,11 @@ jobs:
       - name: Test
         run: go test -v ./...
 
-      - name: Build and release executables
+      - name: Release
         # if: startswith(github.ref,'refs/heads/master')
         # if: startswith(github.ref,'feature/deployment')
         run: |
+          ls -larth
           GOOS=darwin GOARCH=amd64 go build -o MastoTool
           GOOS=windows GOARCH=amd64 go build -o MastoTool.exe
           GOOS=linux GOARCH=amd64 go build -o mastotool
