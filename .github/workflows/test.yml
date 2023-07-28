@@ -46,13 +46,15 @@ jobs:
           GOOS=darwin GOARCH=amd64 go build -o MastoTool
           GOOS=windows GOARCH=amd64 go build -o MastoTool.exe
           GOOS=linux GOARCH=amd64 go build -o mastotool
+          ls -l
 
       - name: Upload executables as artifacts
         # if: startswith(github.ref,'refs/heads/master')
         uses: actions/upload-artifact@v3
         with:
           name: release-artifacts
-          path: MastoTool
+          path: |
+            MastoTool
             MastoTool.exe
             mastotool
       # - name: Trigger Deploy job
