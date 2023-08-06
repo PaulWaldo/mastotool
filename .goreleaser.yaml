@@ -8,8 +8,8 @@ before:
     # - go generate ./...
     - go mod download
 builds:
-  - main: ./cmd/mastotool/
-    env:
+  # - main: ./cmd/mastotool/
+  - env:
       - CGO_ENABLED=1
     goos:
       - linux

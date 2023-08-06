@@ -1,4 +1,4 @@
-package mastotool
+package app
 
 import (
 	"errors"

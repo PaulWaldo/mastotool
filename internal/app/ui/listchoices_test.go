@@ -98,7 +98,8 @@ func TestListChoices_TagMovingButtonTapsMoveTags(t *testing.T) {
 		assert.Equal(t, expectedRightLen, lc.RightList.Length())
 	}
 	assert.False(t, lc.MoveRightButton.Disabled(), "Move right button diabled")
-	assert.True(t, lc.MoveLeftButton.Disabled(), "Move left button disabled")}
+	assert.True(t, lc.MoveLeftButton.Disabled(), "Move left button disabled")
+}
 
 func TestListChoices_TagMovingButtonsMoveTagsSelectingFirstListItems(t *testing.T) {
 	t.Parallel()

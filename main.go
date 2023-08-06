@@ -4,7 +4,7 @@ It currently has a single function, removing some or all followed tags
 */
 package main
 
-import "github.com/PaulWaldo/mastotool/ui"
+import "github.com/PaulWaldo/mastotool/internal/app/ui"
 
 func main() {
 	ui.Run()
