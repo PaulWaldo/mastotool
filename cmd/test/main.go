@@ -4,7 +4,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
-	"github.com/PaulWaldo/mastotool/ui"
+	"github.com/PaulWaldo/mastotool/internal/app/ui"
 	"github.com/mattn/go-mastodon"
 )
 

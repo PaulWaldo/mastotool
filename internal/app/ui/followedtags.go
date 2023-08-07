@@ -9,7 +9,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/PaulWaldo/mastotool"
+	"github.com/PaulWaldo/mastotool/internal/app"
 	"github.com/mattn/go-mastodon"
 )
 
@@ -49,7 +49,7 @@ func (ma *myApp) MakeFollowedTagsUI() fyne.CanvasObject {
 			makeRemoveConfirmUI(ma.listChoices.RightItems), func(b bool) {
 				if b {
 					c := NewClientFromPrefs(ma.prefs)
-					err := mastotool.RemoveFollowedTags(*c, ma.listChoices.RightItems)
+					err := app.RemoveFollowedTags(*c, ma.listChoices.RightItems)
 					if err != nil {
 						dialog.NewError(err, ma.window)
 						return
@@ -92,7 +92,7 @@ func (ma *myApp) RemoveFollowedTags(w fyne.Window) func() {
 		dialog.ShowCustomConfirm("Confirm Unfollow", "Unfollow", "Cancel", makeRemoveConfirmUI(ma.listChoices.RightItems), func(b bool) {
 			if b {
 				c := NewClientFromPrefs(ma.prefs)
-				err := mastotool.RemoveFollowedTags(*c, ma.listChoices.RightItems)
+				err := app.RemoveFollowedTags(*c, ma.listChoices.RightItems)
 				if err != nil {
 					dialog.NewError(err, w)
 					return

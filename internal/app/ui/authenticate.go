@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
-	"github.com/PaulWaldo/mastotool"
+	"github.com/PaulWaldo/mastotool/internal/app"
 	"github.com/mattn/go-mastodon"
 )
 
@@ -22,7 +22,7 @@ func (ma *myApp) authenticate() {
 		if confirmed {
 			val, _ := ma.prefs.MastodonServer.Get()
 			fmt.Printf("Server is %s\n", val)
-			app, err := mastodon.RegisterApp(context.Background(), mastotool.NewAuthenticationConfig(val))
+			app, err := mastodon.RegisterApp(context.Background(), app.NewAuthenticationConfig(val))
 			fmt.Printf("Got token %+v\n", app)
 			if err != nil {
 				dialog.NewError(err, ma.window).Show()
