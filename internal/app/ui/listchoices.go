@@ -13,9 +13,14 @@ import (
 
 var _ fyne.Widget = &ListChoices{}
 
+type ListChoicer interface {
+}
+
+type ListChoicers []ListChoicer
+
 type ListChoices struct {
 	widget.BaseWidget
-	LeftItems, RightItems []*mastodon.FollowedTag
+	LeftItems, RightItems ListChoicers
 	LeftLabel, RightLabel *widget.Label
 
 	LeftList, RightList               *widget.List
@@ -23,10 +28,10 @@ type ListChoices struct {
 	LeftSelectionId, RightSelectionId widget.ListItemID
 }
 
-func NewListChoices() *ListChoices {
+func NewSimpleListChoices() *ListChoices {
 	lc := &ListChoices{}
-	lc.LeftItems = []*mastodon.FollowedTag{}
-	lc.RightItems = []*mastodon.FollowedTag{}
+	lc.LeftItems = ListChoicers{}
+	lc.RightItems = ListChoicers{}
 	lc.LeftList = widget.NewList(
 		func() int {
 			return len(lc.LeftItems)
@@ -46,6 +51,23 @@ func NewListChoices() *ListChoices {
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(lc.RightItems[i].Name)
 		},
+	)
+	return lc
+}
+
+func NewListChoices(createItem func() fyne.CanvasObject, updateItem func(widget.ListItemID, fyne.CanvasObject)) *ListChoices {
+	lc := &ListChoices{}
+	lc.LeftItems = ListChoicers{}
+	lc.RightItems = ListChoicers{}
+	lc.LeftList = widget.NewList(
+		func() int {
+			return len(lc.LeftItems)
+		},
+		createItem, updateItem,
+	)
+	lc.RightList = widget.NewList(
+		func() int { return len(lc.RightItems) },
+		createItem, updateItem,
 	)
 
 	lc.LeftLabel = widget.NewLabel("Left")
