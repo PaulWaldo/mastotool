@@ -1,0 +1,7 @@
+Website = "https://github.com/PaulWaldo/mastotool"
+
+[Details]
+  Icon = "assets/Icon.png"
+  Name = "MastoTool"
+  ID = "com.github.PaulWaldo.mastotool"
+  Build = 2
