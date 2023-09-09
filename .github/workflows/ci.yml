@@ -52,34 +52,14 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
+      - name: Install required packages
+        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev xorg-dev
 
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
 
       # Run tests
       - run: go test -v -cover -race ./...
-
-  #   k8s:
-  #     name: "Verify k8s build"
-  #     runs-on: ${{ matrix.os }}
-  #     strategy:
-  #       matrix:
-  #         os: [ubuntu-latest, macos-latest, windows-latest]
-  #         # use max/min supported Go versions
-  #         go-version: ["1.18.x"]
-
-  #     steps:
-  #     - name: Setup Go environment
-  #       id: setup-go
-  #       uses: actions/setup-go@v3
-  #       with:
-  #         go-version: ${{ matrix.go-version }}
-
-  #     # Checks-out the repository under $GITHUB_WORKSPACE
-  #     - uses: actions/checkout@v2
-
-  #     # Run tests
-  #     - run: go build -tags k8s
 
   build:
     name: "Build Calculator (${{ matrix.target.os }}, ${{ matrix.go-version }})"
@@ -160,7 +140,6 @@ jobs:
           fyne-cross \
             ${{ matrix.target.os }} \
             ${{ matrix.target.args }} \
-            -debug -no-cache \
             -name mastotool${{ matrix.target.ext }}
 
 #   build-fyneterm:
