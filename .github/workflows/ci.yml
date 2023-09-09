@@ -59,7 +59,8 @@ jobs:
       - uses: actions/checkout@v4
 
       # Run tests
-      - run: go test -v -cover -race ./...
+      # TODO add race detection once fyne can handle it
+      - run: go test -v -cover ./...
 
   build:
     name: "Build MastoTool (${{ matrix.target.os }}, ${{ matrix.go-version }})"
