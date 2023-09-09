@@ -13,7 +13,6 @@ import (
 )
 
 func TestRemoveFollowedTags(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		c    mastodon.Client
 		tags []*mastodon.FollowedTag
@@ -96,7 +95,6 @@ func TestRemoveFollowedTags(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			err := RemoveFollowedTags(tt.args.c, tt.args.tags)
 			if tt.wantErr != nil {
 				assert.EqualError(t, tt.wantErr, err.Error())
