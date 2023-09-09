@@ -14,7 +14,7 @@ func main() {
 	lc := ui.NewListChoices()
 	lc.SetLeftItems([]*mastodon.FollowedTag{{Name: "aaa"}, {Name: "bbb"}})
 	lc.SetRightItems([]*mastodon.FollowedTag{{Name: "AAAAA"}})
-	w.SetContent(container.NewMax(lc))
+	w.SetContent(container.NewStack(lc))
 
 	w.Resize(fyne.Size{Width: 400, Height: 400})
 	w.ShowAndRun()
