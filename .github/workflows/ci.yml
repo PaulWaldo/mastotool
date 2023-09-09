@@ -161,7 +161,7 @@ jobs:
             ${{ matrix.target.os }} \
             ${{ matrix.target.args }} \
             -debug -no-cache \
-            -name calculator${{ matrix.target.ext }}
+            -name mastotool${{ matrix.target.ext }}
 
 #   build-fyneterm:
 #     name: "Build Fyneterm (${{ matrix.target.os }}, ${{ matrix.go-version }})"
