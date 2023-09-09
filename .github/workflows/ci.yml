@@ -155,7 +155,7 @@ jobs:
       #       podman machine start
 
       - name: Build
-        working-directory: calculator
+        # working-directory: calculator
         run: |
           fyne-cross \
             ${{ matrix.target.os }} \
