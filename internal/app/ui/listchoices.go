@@ -2,6 +2,7 @@ package ui
 
 import (
 	"log"
+	"sync"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -21,6 +22,7 @@ type ListChoices struct {
 	LeftList, RightList               *widget.List
 	MoveLeftButton, MoveRightButton   *widget.Button
 	LeftSelectionId, RightSelectionId widget.ListItemID
+	rItemsMutex, lItemsMutex          sync.RWMutex
 }
 
 func NewListChoices() *ListChoices {
@@ -29,7 +31,10 @@ func NewListChoices() *ListChoices {
 	lc.RightItems = []*mastodon.FollowedTag{}
 	lc.LeftList = widget.NewList(
 		func() int {
-			return len(lc.LeftItems)
+			lc.lItemsMutex.RLock()
+			n := len(lc.LeftItems)
+			lc.lItemsMutex.RUnlock()
+			return n
 		},
 		func() fyne.CanvasObject {
 			return widget.NewLabel("XXXXXXXXXXXXXXX")
@@ -118,12 +123,16 @@ func NewListChoices() *ListChoices {
 }
 
 func (lc *ListChoices) SetLeftItems(t []*mastodon.FollowedTag) {
+	lc.lItemsMutex.Lock()
 	lc.LeftItems = t
+	lc.lItemsMutex.Unlock()
 	lc.LeftList.Refresh()
 }
 
 func (lc *ListChoices) SetRightItems(t []*mastodon.FollowedTag) {
+	lc.rItemsMutex.Lock()
 	lc.RightItems = t
+	lc.rItemsMutex.Unlock()
 	lc.RightList.Refresh()
 }
 
