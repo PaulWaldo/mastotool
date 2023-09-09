@@ -1,0 +1,102 @@
+name: "Release"
+
+on:
+  push:
+    branches: "main"
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  artifacts:
+    name: Create Artifacts
+    runs-on: ${{ matrix.target.host || 'ubuntu-latest' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: ["1.21.x"]
+        target:
+          - os: linux
+          - os: windows
+            ext: .exe
+          - os: freebsd
+          - os: android
+          # Darwin not working right now
+          # - os: darwin
+          #   host: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # https://github.com/orgs/community/discussions/26686
+      - name: Branch name
+        id: branch_name
+        run: |
+          echo "{SOURCE_NAME}={GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+          echo "{SOURCE_BRANCH}={GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+          echo "{SOURCE_TAG}={GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          cache: true
+          go-version-file: "go.mod"
+          cache-dependency-path: |
+            go.sum
+
+      - name: Install Fyne-cross
+        # working-directory: fyne-cross
+        run: go install github.com/fyne-io/fyne-cross@latest
+
+      # attempt to use "go install" but fallback to "go get"
+      - name: Install Fyne
+        run: |
+          go install fyne.io/fyne/v2/cmd/fyne@latest ||
+          go get fyne.io/fyne/v2/cmd/fyne@latest
+
+      - name: Install Podman
+        if: ${{ runner.os == 'macos' }}
+        run: |
+          brew install podman
+          podman machine init
+          podman machine start
+
+      - name: "Build MastoTool (${{ matrix.target.os }}, ${{ matrix.go-version }})"
+        # Place build targets in "/home/runner/work/mastotool/mastotool/fyne-cross/dist/linux-amd64/mastotool.tar.xz"
+        run: |
+          fyne-cross \
+            ${{ matrix.target.os }} \
+            ${{ matrix.target.args }} \
+            -app-id com.github.PaulWaldo.mastotool \
+            -name MastoTool \
+            -icon assets/Icon.png \
+            -app-version ${{ env.SOURCE_TAG }} \
+            -app-build ${{ github.run_attempt }}
+          ls -lR fyne-cross/dist
+        env:
+          SOURCE_NAME: ${{ steps.branch_name.outputs.SOURCE_NAME }}
+          SOURCE_BRANCH: ${{ steps.branch_name.outputs.SOURCE_BRANCH }}
+          SOURCE_TAG: ${{ steps.branch_name.outputs.SOURCE_TAG }}
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: mastotool
+          path: fyne-cross/dist/${{ matrix.target.os }}*/*
+
+  release:
+    name: Create Release
+    needs: artifacts
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v3
+
+      - run: ls -lR
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: mastotool/*/*

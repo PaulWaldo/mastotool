@@ -13,3 +13,6 @@ test:
 tidy:
 	go fmt ./...
 	go vet ./...
+
+package:
+	fyne package -icon assets/Icon.png -name Mastotool

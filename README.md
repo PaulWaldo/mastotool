@@ -1,5 +1,7 @@
 # MastoTool
 
+[![Verify](https://github.com/PaulWaldo/mastotool/actions/workflows/verification.yml/badge.svg)](https://github.com/PaulWaldo/mastotool/actions/workflows/verification.yml)
+
 Tools for managing your Mastodon account
 
 ## Motivation
