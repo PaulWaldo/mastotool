@@ -140,7 +140,7 @@ jobs:
           key: ${{ runner.os }}-build-cache-${{ hashFiles('**/go.sum') }}
 
       - name: Install Fyne-cross
-        working-directory: fyne-cross
+        # working-directory: fyne-cross
         run: go install github.com/fyne-io/fyne-cross
 
         # attempt to use "go install" but fallback to "go get"
