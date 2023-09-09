@@ -67,6 +67,7 @@ func TestAuthenticationURL(t *testing.T) {
 }
 
 func TestNewAuthenticationConfig_ProperlyPopulatesStructure(t *testing.T) {
+	t.Parallel()
 	server := "https://myserver"
 	got := NewAuthenticationConfig(server)
 	assert.Equal(t, server, got.Server, "Expecting server to be %s, but got %s", server, got.Server)
