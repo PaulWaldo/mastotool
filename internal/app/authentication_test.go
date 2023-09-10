@@ -50,7 +50,6 @@ func TestAuthenticationURL(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	t.Parallel()
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -67,7 +66,6 @@ func TestAuthenticationURL(t *testing.T) {
 }
 
 func TestNewAuthenticationConfig_ProperlyPopulatesStructure(t *testing.T) {
-	t.Parallel()
 	server := "https://myserver"
 	got := NewAuthenticationConfig(server)
 	assert.Equal(t, server, got.Server, "Expecting server to be %s, but got %s", server, got.Server)

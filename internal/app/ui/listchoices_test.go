@@ -12,7 +12,6 @@ import (
 )
 
 func TestListChoices_DisplaysCorrectItems(t *testing.T) {
-	t.Parallel()
 	a := test.NewApp()
 	w := a.NewWindow("")
 	leftTags := createTags("Left", 3)
@@ -35,7 +34,6 @@ func TestListChoices_DisplaysCorrectItems(t *testing.T) {
 }
 
 func TestListChoices_ListHeadersAreCorrect(t *testing.T) {
-	t.Parallel()
 	a := test.NewApp()
 	w := a.NewWindow("")
 	lc := NewListChoices()
@@ -57,7 +55,6 @@ func TestListChoices_ListHeadersAreCorrect(t *testing.T) {
 }
 
 func TestListChoices_TagMovingButtonTapsMoveTags(t *testing.T) {
-	t.Parallel()
 	numFollowedTags := 2
 	allFollowedTags := createTags("Tag", numFollowedTags)
 	a := test.NewApp()
@@ -102,7 +99,6 @@ func TestListChoices_TagMovingButtonTapsMoveTags(t *testing.T) {
 }
 
 func TestListChoices_TagMovingButtonsMoveTagsSelectingFirstListItems(t *testing.T) {
-	t.Parallel()
 	tags := []*mastodon.FollowedTag{
 		{Name: "Tag1"},
 		{Name: "Tag2"},
@@ -149,7 +145,6 @@ func TestListChoices_TagMovingButtonsMoveTagsSelectingFirstListItems(t *testing.
 	}
 }
 func TestListChoices_TagMovingButtonsMoveTagsSelectingLastListItems(t *testing.T) {
-	t.Parallel()
 	tags := []*mastodon.FollowedTag{
 		{Name: "Tag1"},
 		{Name: "Tag2"},
@@ -196,7 +191,6 @@ func TestListChoices_TagMovingButtonsMoveTagsSelectingLastListItems(t *testing.T
 }
 
 func TestListChoices_MovingLastTagToRightUpdatesSelection(t *testing.T) {
-	t.Parallel()
 	tags := createTags("Tag", 2)
 	a := test.NewApp()
 	w := a.NewWindow("")
@@ -213,7 +207,6 @@ func TestListChoices_MovingLastTagToRightUpdatesSelection(t *testing.T) {
 	assert.True(t, lc.MoveRightButton.Disabled(), "Move right should be disabled")
 }
 func TestListChoices_MovingLastTagToLeftUpdatesSelection(t *testing.T) {
-	t.Parallel()
 	tags := createTags("Tag", 2)
 	a := test.NewApp()
 	w := a.NewWindow("")
