@@ -48,12 +48,12 @@ func TestRemoveFollowedTags(t *testing.T) {
 			t.Fatalf("writing mocked response: %s", err)
 		}
 	}))
-	defer successServer.Close()
+	// defer successServer.Close()
 
 	failureServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 	}))
-	defer successServer.Close()
+	// defer failureServer.Close()
 
 	tests := []struct {
 		name    string
@@ -93,6 +93,7 @@ func TestRemoveFollowedTags(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			err := RemoveFollowedTags(tt.args.c, tt.args.tags)
 			if tt.wantErr != nil {

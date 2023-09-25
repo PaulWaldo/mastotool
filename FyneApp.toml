@@ -1,0 +1,8 @@
+Website = "https://github.com/PaulWaldo/mastotool"
+
+[Details]
+Version = 0.0.1
+Icon = "assets/Icon.png"
+Name = "MastoTool"
+ID = "com.github.PaulWaldo.mastotool"
+Build = 3
