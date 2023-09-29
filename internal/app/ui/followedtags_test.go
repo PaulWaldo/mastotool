@@ -28,7 +28,6 @@ func TestMakeFollowedTagsUI_PopulatesList(t *testing.T) {
 			},
 		},
 	}
-	t.Parallel()
 	for i := range tests {
 		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
@@ -58,7 +57,6 @@ func TestMakeFollowedTagsUI_PopulatesList(t *testing.T) {
 }
 
 func TestFollowedTagsUI_TagMovingButtonPressesChangesUnfollowButtonEnabled(t *testing.T) {
-	t.Parallel()
 	allFollowedTags := createTags("Tag", 3)
 	a := test.NewApp()
 	w := a.NewWindow("")
@@ -89,7 +87,6 @@ func TestFollowedTagsUI_TagMovingButtonPressesChangesUnfollowButtonEnabled(t *te
 }
 
 func TestFollowedTagsUI_TappingRefreshButtonRepopulatesTags(t *testing.T) {
-	t.Parallel()
 	a := test.NewApp()
 	w := a.NewWindow("")
 	keepTags := createTags("KTag", 3)

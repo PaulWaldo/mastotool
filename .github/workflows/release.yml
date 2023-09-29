@@ -1,0 +1,103 @@
+name: "Release"
+
+on:
+  push:
+    branches: "main"
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  artifacts:
+    name: Create Artifacts
+    runs-on: ${{ matrix.target.host || 'ubuntu-latest' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: ["1.21.x"]
+        target:
+          - os: linux
+          - os: windows
+            ext: .exe
+          - os: freebsd
+          - os: android
+          # Darwin not working right now
+          # - os: darwin
+          #   host: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          cache: true
+          go-version-file: "go.mod"
+          cache-dependency-path: |
+            go.sum
+
+      - name: Install Fyne-cross
+        # working-directory: fyne-cross
+        run: go install github.com/fyne-io/fyne-cross@latest
+
+      # attempt to use "go install" but fallback to "go get"
+      - name: Install Fyne
+        run: |
+          go install fyne.io/fyne/v2/cmd/fyne@latest ||
+          go get fyne.io/fyne/v2/cmd/fyne@latest
+
+      - name: Install Podman
+        if: ${{ runner.os == 'macos' }}
+        run: |
+          brew install podman
+          podman machine init
+          podman machine start
+
+      - name: "Build MastoTool (${{ matrix.target.os }}, ${{ matrix.go-version }})"
+        # Place build targets in "/home/runner/work/mastotool/mastotool/fyne-cross/dist/linux-amd64/mastotool.tar.xz"
+        run: |
+          echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"
+          echo "Tag name from github.ref_name: ${{ github.ref_name }}"
+          mkdir -p assemble
+          fyne-cross \
+            ${{ matrix.target.os }} \
+            ${{ matrix.target.args }} \
+            -app-id com.github.PaulWaldo.mastotool \
+            -name MastoTool \
+            -app-version ${{ github.ref_name }} \
+            -app-build ${{ github.run_attempt }} \
+            -icon assets/Icon.png
+          ls -lR fyne-cross/dist
+          case ${{ matrix.target.os }} in
+              "linux") cp fyne-cross/dist/linux-amd64/MastoTool.tar.xz assemble/MastoTool-linux-amd64.tar.xz ;;
+              "windows") cp fyne-cross/dist/windows-amd64/MastoTool.zip assemble/MastoTool-windows-amd64.zip ;;
+              "freebsd") cp fyne-cross/dist/freebsd-amd64/MastoTool.tar.xz assemble/MastoTool-freebsd-amd64.tar.xz ;;
+              "android") cp fyne-cross/dist/android/MastoTool.apk assemble/MastoTool-android.apk ;;
+          esac
+          ls assemble
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: mastotool
+          path: assemble/*
+
+  release:
+    name: Create Release
+    needs: artifacts
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: mastotool
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "*"
