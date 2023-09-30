@@ -31,14 +31,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # https://github.com/orgs/community/discussions/26686
-      # - name: Branch name
-      #   id: branch_name
-      #   run: |
-      #     echo "{SOURCE_NAME}={GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
-      #     echo "{SOURCE_BRANCH}={GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
-      #     echo "{SOURCE_TAG}={GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
@@ -67,25 +59,31 @@ jobs:
       - name: "Build MastoTool (${{ matrix.target.os }}, ${{ matrix.go-version }})"
         # Place build targets in "/home/runner/work/mastotool/mastotool/fyne-cross/dist/linux-amd64/mastotool.tar.xz"
         run: |
+          echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"
+          echo "Tag name from github.ref_name: ${{ github.ref_name }}"
+          mkdir -p assemble
           fyne-cross \
             ${{ matrix.target.os }} \
             ${{ matrix.target.args }} \
             -app-id com.github.PaulWaldo.mastotool \
             -name MastoTool \
-            -icon assets/Icon.png \
-            -app-version ${{ github.event.ref }} \
-            -app-build ${{ github.run_attempt }}
+            -app-version ${{ github.ref_name }} \
+            -app-build ${{ github.run_attempt }} \
+            -icon assets/Icon.png
           ls -lR fyne-cross/dist
-        # env:
-        #   SOURCE_NAME: ${{ steps.branch_name.outputs.SOURCE_NAME }}
-        #   SOURCE_BRANCH: ${{ steps.branch_name.outputs.SOURCE_BRANCH }}
-        #   SOURCE_TAG: ${{ steps.branch_name.outputs.SOURCE_TAG }}
+          case ${{ matrix.target.os }} in
+              "linux") cp fyne-cross/dist/linux-amd64/MastoTool.tar.xz assemble/MastoTool-linux-amd64.tar.xz ;;
+              "windows") cp fyne-cross/dist/windows-amd64/MastoTool.zip assemble/MastoTool-windows-amd64.zip ;;
+              "freebsd") cp fyne-cross/dist/freebsd-amd64/MastoTool.tar.xz assemble/MastoTool-freebsd-amd64.tar.xz ;;
+              "android") cp fyne-cross/dist/android/MastoTool.apk assemble/MastoTool-android.apk ;;
+          esac
+          ls assemble
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
           name: mastotool
-          path: fyne-cross/dist/${{ matrix.target.os }}*/*
+          path: assemble/*
 
   release:
     name: Create Release
@@ -94,9 +92,12 @@ jobs:
     steps:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
+        with:
+          name: mastotool
 
-      - run: ls -lR
+      - name: Display structure of downloaded files
+        run: ls -R
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: mastotool/*/*
+          artifacts: "*"
