@@ -16,3 +16,6 @@ tidy:
 
 package:
 	fyne package -icon assets/Icon.png -name Mastotool
+
+mobilesim:
+	go run -tags mobile main.go
