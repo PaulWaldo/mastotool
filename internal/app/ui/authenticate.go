@@ -21,9 +21,9 @@ func (ma *myApp) authenticate() {
 	}, func(confirmed bool) {
 		if confirmed {
 			val, _ := ma.prefs.MastodonServer.Get()
-			fmt.Printf("Server is %s\n", val)
+			// fmt.Printf("Server is %s\n", val)
 			app, err := mastodon.RegisterApp(context.Background(), app.NewAuthenticationConfig(val))
-			fmt.Printf("Got token %+v\n", app)
+			// fmt.Printf("Got token %+v\n", app)
 			if err != nil {
 				dialog.NewError(err, ma.window).Show()
 				return
@@ -71,7 +71,7 @@ func (ma *myApp) getAuthCode() {
 		func(confirmed bool) {
 			if confirmed {
 				c := NewClientFromPrefs(ma.prefs)
-				fmt.Printf("After authorizing, client is \n%+v\n", c.Config)
+				// fmt.Printf("After authorizing, client is \n%+v\n", c.Config)
 				err := c.AuthenticateToken(context.Background(), accessTokenEntry.Text, "urn:ietf:wg:oauth:2.0:oob")
 				if err != nil {
 					dialog.NewError(err, ma.window).Show()
