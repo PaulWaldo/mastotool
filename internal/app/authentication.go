@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	clientName = "Mastotool"
+	clientName = "MastoTool"
 	website    = "https://github.com/PaulWaldo/mastotool"
 )
 
@@ -16,7 +16,7 @@ func NewAuthenticationConfig(server string) *mastodon.AppConfig {
 	return &mastodon.AppConfig{
 		Server:       server,
 		ClientName:   clientName,
-		Scopes:       "read write follow",
+		Scopes:       "follow",
 		Website:      website,
 		RedirectURIs: "urn:ietf:wg:oauth:2.0:oob",
 	}
