@@ -36,8 +36,6 @@ jobs:
         with:
           cache: true
           go-version-file: "go.mod"
-          cache-dependency-path: |
-            go.sum
 
       - name: Install Fyne-cross
         # working-directory: fyne-cross

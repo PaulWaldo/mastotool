@@ -13,12 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
-          # cache:
-          # - description: Used to specify whether caching is needed. Set to true, if you'd like to enable caching.
-          # default: false
           go-version-file: "go.mod"
-          cache-dependency-path: |
-            go.sum
       - name: "Install staticcheck"
         run: go install honnef.co/go/tools/cmd/staticcheck@latest
       - name: "Install goimports"
@@ -45,7 +40,6 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
-          cache: false
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
