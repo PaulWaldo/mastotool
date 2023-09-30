@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"github.com/PaulWaldo/mastotool/internal/app"
@@ -15,10 +16,9 @@ import (
 func (ma *myApp) authenticate() {
 	serverUrlEntry := widget.NewEntryWithData(ma.prefs.MastodonServer)
 	serverUrlEntry.Validator = nil
-	serverUrlEntry.SetPlaceHolder("https://mymastodonserver.com")
-	form := dialog.NewForm("Mastodon Server", "Authenticate", "Abort", []*widget.FormItem{
-		{Text: "Server", Widget: serverUrlEntry, HintText: "URL of your Mastodon server"},
-	}, func(confirmed bool) {
+	formContents := container.NewVBox(serverUrlEntry)
+	serverUrlEntry.SetPlaceHolder("https://MyMastodonServer.com")
+	form := dialog.NewCustomConfirm("URL of your Mastodon server", "Authenticate", "Abort", formContents, func(confirmed bool) {
 		if confirmed {
 			val, _ := ma.prefs.MastodonServer.Get()
 			// fmt.Printf("Server is %s\n", val)
