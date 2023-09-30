@@ -18,7 +18,7 @@ Assuming you have a proper `go` environment, execute
 
 `go run github.com/PaulWaldo/mastotool`.
 
-It is anticipated to provide proper binaries for download soon.
+You may also download binaries at [Releases · PaulWaldo/mastotool](https://github.com/PaulWaldo/mastotool/releases)
 
 ## Running
 
