@@ -13,6 +13,17 @@ import (
 	"github.com/mattn/go-mastodon"
 )
 
+// enterActivatedConfirmDialog
+// type enterActivatedConfirmDialog struct {
+// 	dialog.CustomDialog
+// }
+
+// func newEnterActivatedConfirmDialog(title, confirm, dismiss string, content fyne.CanvasObject,
+// 	callback func(bool), parent fyne.Window) *dialog.ConfirmDialog {
+// 	d := dialog.NewCustomConfirm(title, confirm, dismiss, content, callback, parent)
+// 	d.
+// }
+
 func (ma *myApp) authenticate() {
 	serverUrlEntry := widget.NewEntryWithData(ma.prefs.MastodonServer)
 	serverUrlEntry.Validator = nil
@@ -66,7 +77,7 @@ func (ma *myApp) getAuthCode() {
 		{
 			Text:     "Authorization Code",
 			Widget:   accessTokenEntry,
-			HintText: "XXXXXXXXXXXXXXX",
+			HintText: "XXX-XXX-XXX",
 		}},
 		func(confirmed bool) {
 			if confirmed {

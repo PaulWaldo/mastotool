@@ -29,17 +29,13 @@ jobs:
         run: go test -v -race -cover ./...
 
   golangci:
-    strategy:
-      matrix:
-        go: ["1.21"]
-        os: [macos-latest, windows-latest, linux]
     name: lint
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
-          go-version: ${{ matrix.go }}
+          go-version: "1.21.x"
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
