@@ -2,7 +2,6 @@ package ui
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -81,15 +80,11 @@ func (ma *myApp) MakeFollowedTagsUI() fyne.CanvasObject {
 	ma.serverText = canvas.NewText("", theme.PlaceHolderColor())
 	ma.serverText.TextSize = theme.CaptionTextSize()
 	ss := func() {
-		fmt.Printf("Changing text: ma=%p\n", ma)
 		s, _ := ma.prefs.MastodonServer.Get()
-		fmt.Printf("Text = %s\n", s)
 		ma.serverText.Text = s
 		ma.serverText.Refresh()
 	}
 	if ma.prefs.MastodonServer != nil {
-		fmt.Printf("Adding Listener: ma=%p\n", ma)
-
 		ma.prefs.MastodonServer.AddListener(binding.NewDataListener(ss))
 	}
 

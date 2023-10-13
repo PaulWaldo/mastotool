@@ -13,17 +13,6 @@ import (
 	"github.com/mattn/go-mastodon"
 )
 
-// enterActivatedConfirmDialog
-// type enterActivatedConfirmDialog struct {
-// 	dialog.CustomDialog
-// }
-
-// func newEnterActivatedConfirmDialog(title, confirm, dismiss string, content fyne.CanvasObject,
-// 	callback func(bool), parent fyne.Window) *dialog.ConfirmDialog {
-// 	d := dialog.NewCustomConfirm(title, confirm, dismiss, content, callback, parent)
-// 	d.
-// }
-
 func (ma *myApp) authenticate() {
 	serverUrlEntry := widget.NewEntryWithData(ma.prefs.MastodonServer)
 	serverUrlEntry.Validator = nil
@@ -32,9 +21,7 @@ func (ma *myApp) authenticate() {
 	form := dialog.NewCustomConfirm("URL of your Mastodon server", "Authenticate", "Abort", formContents, func(confirmed bool) {
 		if confirmed {
 			val, _ := ma.prefs.MastodonServer.Get()
-			// fmt.Printf("Server is %s\n", val)
 			app, err := mastodon.RegisterApp(context.Background(), app.NewAuthenticationConfig(val))
-			// fmt.Printf("Got token %+v\n", app)
 			if err != nil {
 				dialog.NewError(err, ma.window).Show()
 				return

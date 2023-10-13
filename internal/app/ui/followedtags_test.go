@@ -2,7 +2,6 @@ package ui
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -99,9 +98,7 @@ func TestFollowedTagsUI_TappingRefreshButtonRepopulatesTags(t *testing.T) {
 	err = ma.prefs.ClientID.Set("clientid")
 	assert.NoError(t, err)
 	err = ma.prefs.ClientSecret.Set("secret")
-	x := ma.MakeFollowedTagsUI()
-	fmt.Println("Setting content")
-	w.SetContent(x /*ma.MakeFollowedTagsUI()*/)
+	w.SetContent(ma.MakeFollowedTagsUI())
 	assert.NoError(t, err)
 	w.Resize(fyne.Size{Width: 400, Height: 400})
 	assert.Equal(t, 3, ma.listChoices.LeftList.Length())
@@ -145,7 +142,6 @@ func Test_MakeFollowedTagsUI_SetsServerTextFromCurrentServer(t *testing.T) {
 		},
 		{
 			name: "Empty server URL",
-			// fields: fields{server: "https://myserver.com"},
 			want: "",
 		},
 	}
