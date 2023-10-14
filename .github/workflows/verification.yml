@@ -25,21 +25,22 @@ jobs:
         run: test -z $(find . -name '*.go' -type f | xargs goimports -e -d | tee /dev/stderr)
       - name: "Run staticcheck"
         run: staticcheck ./...
+      # Unable to do race detection now, see https://github.com/fyne-io/fyne/issues/2509
       - name: "Unit Tests"
-        run: go test -v -race -cover ./...
+        run: go test -v -cover ./...
 
   golangci:
-    strategy:
-      matrix:
-        go: ["1.21"]
-        os: [macos-latest, windows-latest, linux]
     name: lint
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Install required packages
+        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev xorg-dev
+
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
-          go-version: ${{ matrix.go }}
+          go-version: "1.21.x"
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
