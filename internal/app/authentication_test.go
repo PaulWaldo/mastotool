@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAuthenticationURL(t *testing.T) {
+func Test_AuthenticationURL_ReturnsUrlOrError(t *testing.T) {
 	type args struct {
 		appConfig *mastodon.AppConfig
 	}
@@ -42,12 +42,18 @@ func TestAuthenticationURL(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "returns valid authentication URL",
+			name: "valid authentication URL",
 			args: args{appConfig: &mastodon.AppConfig{
 				Server: successServer.URL,
 			}},
 			want:    goodURL,
 			wantErr: false,
+		},
+		{
+			name:    "empty appConfig",
+			args:    args{appConfig: &mastodon.AppConfig{}},
+			want:    nil,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {

@@ -6,6 +6,7 @@ replace github.com/mattn/go-mastodon => github.com/PaulWaldo/go-mastodon v1.1.0
 
 require (
 	fyne.io/fyne/v2 v2.4.0
+	github.com/google/go-cmp v0.5.8
 	github.com/mattn/go-mastodon v0.0.6
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
