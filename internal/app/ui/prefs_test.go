@@ -71,13 +71,13 @@ func TestClearCredentialsPrefs_RemovesPreferenceValues(t *testing.T) {
 
 	x, err = ma.prefs.ClientID.Get()
 	assert.NoError(t, err)
-	assert.Equal(t, "", x,"ClientID")
+	assert.Equal(t, "", x, "ClientID")
 
 	x, err = ma.prefs.ClientSecret.Get()
 	assert.NoError(t, err)
-	assert.Equal(t, "", x,"ClientSecret")
+	assert.Equal(t, "", x, "ClientSecret")
 
 	x, err = ma.prefs.MastodonServer.Get()
 	assert.NoError(t, err)
-	assert.Equal(t, "", x,"MastodonServer")
+	assert.Equal(t, "", x, "MastodonServer")
 }
