@@ -23,6 +23,8 @@ func (ma *myApp) authenticate() {
 			val, _ := ma.prefs.MastodonServer.Get()
 			app, err := mastodon.RegisterApp(context.Background(), app.NewAuthenticationConfig(val))
 			if err != nil {
+				fyne.LogError("Calling (Mastodon) App registration", err)
+				ma.serverText.Text = fmt.Sprintf("Error contacting Mastodon server %s", val)
 				dialog.NewError(err, ma.window).Show()
 				return
 			}
@@ -30,6 +32,7 @@ func (ma *myApp) authenticate() {
 			_ = ma.prefs.ClientSecret.Set(app.ClientSecret)
 			authURI, err := url.Parse(app.AuthURI)
 			if err != nil {
+				fyne.LogError("Parsing authentication URI", err)
 				dialog.NewError(err, ma.window).Show()
 				return
 			}

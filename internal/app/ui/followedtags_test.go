@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/test"
@@ -142,7 +143,7 @@ func Test_MakeFollowedTagsUI_SetsServerTextFromCurrentServer(t *testing.T) {
 		},
 		{
 			name: "Empty server URL",
-			want: "",
+			want: "Not logged in",
 		},
 	}
 	for _, tt := range tests {
@@ -156,6 +157,8 @@ func Test_MakeFollowedTagsUI_SetsServerTextFromCurrentServer(t *testing.T) {
 			ma := &myApp{prefs: p, app: a, window: w}
 			ui := ma.MakeFollowedTagsUI()
 			w.SetContent(ui)
+			// Give a moment for DataListener callback to kick in
+			time.Sleep(time.Millisecond * 5)
 			assert.Equal(t, tt.want, ma.serverText.Text)
 		})
 	}

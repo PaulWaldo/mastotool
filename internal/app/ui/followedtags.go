@@ -81,6 +81,10 @@ func (ma *myApp) MakeFollowedTagsUI() fyne.CanvasObject {
 	ma.serverText.TextSize = theme.CaptionTextSize()
 	ss := func() {
 		s, _ := ma.prefs.MastodonServer.Get()
+		ma.serverText.TextStyle.Bold = len(s) == 0
+		if len(s) == 0 {
+			s = "Not logged in"
+		}
 		ma.serverText.Text = s
 		ma.serverText.Refresh()
 	}
@@ -89,7 +93,6 @@ func (ma *myApp) MakeFollowedTagsUI() fyne.CanvasObject {
 	}
 
 	bottom := container.NewVBox(ma.serverText, bottomButtons)
-	// bottom := container.NewBorder(nil, nil, nil, ma.refreshButton, ma.unfollowButton)
 	return container.NewBorder(nil, bottom, nil, nil, ma.listChoices)
 }
 
