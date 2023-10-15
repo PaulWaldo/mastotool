@@ -34,7 +34,7 @@ func Run() {
 	)
 	ma.setAuthMenuStatus()
 	ma.window.SetContent(ma.MakeFollowedTagsUI())
-	ma.window.Resize(fyne.Size{Width: 400, Height: 400})
+	ma.window.Resize(fyne.Size{Width: 1, Height: 400})
 	if ma.isLoggedIn() {
 		ma.refreshFollowedTags()
 	} else {
