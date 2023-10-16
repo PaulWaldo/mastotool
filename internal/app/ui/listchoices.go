@@ -22,6 +22,8 @@ type ListChoices struct {
 	LeftList, RightList               *widget.List
 	MoveLeftButton, MoveRightButton   *widget.Button
 	LeftSelectionId, RightSelectionId widget.ListItemID
+	maxItemLength                     int
+	maxItem                           string
 	rItemsMutex, lItemsMutex          sync.RWMutex
 }
 
@@ -37,7 +39,10 @@ func NewListChoices() *ListChoices {
 			return n
 		},
 		func() fyne.CanvasObject {
-			return widget.NewLabel("XXXXXXXXXXXXXXX")
+			if lc.maxItem == "" {
+				lc.maxItem = "XXX"
+			}
+			return widget.NewLabel(lc.maxItem)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(lc.LeftItems[i].Name)
@@ -46,7 +51,10 @@ func NewListChoices() *ListChoices {
 	lc.RightList = widget.NewList(
 		func() int { return len(lc.RightItems) },
 		func() fyne.CanvasObject {
-			return widget.NewLabel("XXXXXXXXXXXXXXX")
+			if lc.maxItem == "" {
+				lc.maxItem = "XXX"
+			}
+			return widget.NewLabel(lc.maxItem)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(lc.RightItems[i].Name)
@@ -125,6 +133,13 @@ func NewListChoices() *ListChoices {
 func (lc *ListChoices) SetLeftItems(t []*mastodon.FollowedTag) {
 	lc.lItemsMutex.Lock()
 	lc.LeftItems = t
+	for _, m := range t {
+		l := fyne.MeasureText(m.Name, fyne.CurrentApp().Settings().Theme().Size(theme.SizeNameText), fyne.TextStyle{})
+		if int(l.Width) > lc.maxItemLength {
+			lc.maxItemLength = int(l.Width)
+			lc.maxItem = m.Name
+		}
+	}
 	lc.lItemsMutex.Unlock()
 	lc.LeftList.Refresh()
 }

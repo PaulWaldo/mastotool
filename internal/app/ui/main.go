@@ -3,6 +3,7 @@ package ui
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/widget"
 	"github.com/mattn/go-mastodon"
 )
@@ -18,6 +19,7 @@ type myApp struct {
 	unfollowButton        *widget.Button
 	refreshButton         *widget.Button
 	loginMenu, logoutMenu *fyne.MenuItem
+	serverText            *canvas.Text
 }
 
 func Run() {
@@ -32,8 +34,12 @@ func Run() {
 	)
 	ma.setAuthMenuStatus()
 	ma.window.SetContent(ma.MakeFollowedTagsUI())
-	ma.window.Resize(fyne.Size{Width: 400, Height: 400})
-	ma.refreshFollowedTags()
+	ma.window.Resize(fyne.Size{Width: 1, Height: 400})
+	if ma.isLoggedIn() {
+		ma.refreshFollowedTags()
+	} else {
+		ma.authenticate()
+	}
 	ma.window.ShowAndRun()
 }
 

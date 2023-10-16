@@ -6,6 +6,7 @@ import (
 	"net/url"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"github.com/PaulWaldo/mastotool/internal/app"
@@ -15,16 +16,15 @@ import (
 func (ma *myApp) authenticate() {
 	serverUrlEntry := widget.NewEntryWithData(ma.prefs.MastodonServer)
 	serverUrlEntry.Validator = nil
-	serverUrlEntry.SetPlaceHolder("https://mymastodonserver.com")
-	form := dialog.NewForm("Mastodon Server", "Authenticate", "Abort", []*widget.FormItem{
-		{Text: "Server", Widget: serverUrlEntry, HintText: "URL of your Mastodon server"},
-	}, func(confirmed bool) {
+	formContents := container.NewVBox(serverUrlEntry)
+	serverUrlEntry.SetPlaceHolder("https://MyMastodonServer.com")
+	form := dialog.NewCustomConfirm("URL of your Mastodon server", "Authenticate", "Abort", formContents, func(confirmed bool) {
 		if confirmed {
 			val, _ := ma.prefs.MastodonServer.Get()
-			fmt.Printf("Server is %s\n", val)
 			app, err := mastodon.RegisterApp(context.Background(), app.NewAuthenticationConfig(val))
-			fmt.Printf("Got token %+v\n", app)
 			if err != nil {
+				fyne.LogError("Calling (Mastodon) App registration", err)
+				ma.serverText.Text = fmt.Sprintf("Error contacting Mastodon server %s", val)
 				dialog.NewError(err, ma.window).Show()
 				return
 			}
@@ -32,6 +32,7 @@ func (ma *myApp) authenticate() {
 			_ = ma.prefs.ClientSecret.Set(app.ClientSecret)
 			authURI, err := url.Parse(app.AuthURI)
 			if err != nil {
+				fyne.LogError("Parsing authentication URI", err)
 				dialog.NewError(err, ma.window).Show()
 				return
 			}
@@ -66,12 +67,12 @@ func (ma *myApp) getAuthCode() {
 		{
 			Text:     "Authorization Code",
 			Widget:   accessTokenEntry,
-			HintText: "XXXXXXXXXXXXXXX",
+			HintText: "XXX-XXX-XXX",
 		}},
 		func(confirmed bool) {
 			if confirmed {
 				c := NewClientFromPrefs(ma.prefs)
-				fmt.Printf("After authorizing, client is \n%+v\n", c.Config)
+				// fmt.Printf("After authorizing, client is \n%+v\n", c.Config)
 				err := c.AuthenticateToken(context.Background(), accessTokenEntry.Text, "urn:ietf:wg:oauth:2.0:oob")
 				if err != nil {
 					dialog.NewError(err, ma.window).Show()

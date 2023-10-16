@@ -5,7 +5,9 @@ import (
 	"strings"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -72,7 +74,25 @@ func (ma *myApp) MakeFollowedTagsUI() fyne.CanvasObject {
 	ma.refreshButton = widget.NewButtonWithIcon("Refresh", theme.ViewRefreshIcon(), func() {
 		ma.refreshFollowedTags()
 	})
-	bottom := container.NewBorder(nil, nil, nil, ma.refreshButton, ma.unfollowButton)
+	bottomButtons := container.NewBorder(nil, nil, nil, ma.refreshButton, ma.unfollowButton)
+
+	// Created muted text that shows the connected server
+	ma.serverText = canvas.NewText("", theme.PlaceHolderColor())
+	ma.serverText.TextSize = theme.CaptionTextSize()
+	ss := func() {
+		s, _ := ma.prefs.MastodonServer.Get()
+		ma.serverText.TextStyle.Bold = len(s) == 0
+		if len(s) == 0 {
+			s = "Not logged in"
+		}
+		ma.serverText.Text = s
+		ma.serverText.Refresh()
+	}
+	if ma.prefs.MastodonServer != nil {
+		ma.prefs.MastodonServer.AddListener(binding.NewDataListener(ss))
+	}
+
+	bottom := container.NewVBox(ma.serverText, bottomButtons)
 	return container.NewBorder(nil, bottom, nil, nil, ma.listChoices)
 }
 

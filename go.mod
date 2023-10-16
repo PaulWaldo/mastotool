@@ -5,16 +5,17 @@ go 1.19
 replace github.com/mattn/go-mastodon => github.com/PaulWaldo/go-mastodon v1.1.0
 
 require (
-	fyne.io/fyne/v2 v2.4.0
+	fyne.io/fyne/v2 v2.4.1
+	github.com/google/go-cmp v0.5.8
 	github.com/mattn/go-mastodon v0.0.6
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
+	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 )
 
 require (
 	fyne.io/systray v1.10.1-0.20230722100817-88df1e0ffa9a // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/fredbi/uri v1.0.0 // indirect
+	github.com/fredbi/uri v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/fyne-io/gl-js v0.0.0-20230506162202-1fdaa286a934 // indirect
 	github.com/fyne-io/glfw-js v0.0.0-20220517201726-bebc2019cd33 // indirect
@@ -22,7 +23,7 @@ require (
 	github.com/go-gl/gl v0.0.0-20211210172815-726fda9656d6 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b // indirect
 	github.com/go-text/render v0.0.0-20230619120952-35bccb6164b8 // indirect
-	github.com/go-text/typesetting v0.0.0-20230803102845-24e03d8b5372 // indirect
+	github.com/go-text/typesetting v0.0.0-20231013144250-6cc35dbfae7d // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
@@ -35,8 +36,8 @@ require (
 	github.com/tevino/abool v1.2.0 // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
 	github.com/yuin/goldmark v1.5.6 // indirect
-	golang.org/x/image v0.12.0 // indirect
-	golang.org/x/mobile v0.0.0-20230901161150-52620a4a7557 // indirect
+	golang.org/x/image v0.13.0 // indirect
+	golang.org/x/mobile v0.0.0-20231006135142-2b44d11868fe // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect

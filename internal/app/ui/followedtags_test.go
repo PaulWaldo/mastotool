@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/test"
@@ -92,10 +93,14 @@ func TestFollowedTagsUI_TappingRefreshButtonRepopulatesTags(t *testing.T) {
 	keepTags := createTags("KTag", 3)
 	removeTags := createTags("RTag", 1)
 	ma := myApp{keepTags: keepTags, removeTags: removeTags, window: w, app: a, prefs: NewPreferences(a)}
-	_ = ma.prefs.AccessToken.Set("access")
-	_ = ma.prefs.ClientID.Set("clientid")
-	_ = ma.prefs.ClientSecret.Set("secret")
+	var err error
+	err = ma.prefs.AccessToken.Set("access")
+	assert.NoError(t, err)
+	err = ma.prefs.ClientID.Set("clientid")
+	assert.NoError(t, err)
+	err = ma.prefs.ClientSecret.Set("secret")
 	w.SetContent(ma.MakeFollowedTagsUI())
+	assert.NoError(t, err)
 	w.Resize(fyne.Size{Width: 400, Height: 400})
 	assert.Equal(t, 3, ma.listChoices.LeftList.Length())
 	assert.Equal(t, 1, ma.listChoices.RightList.Length())
@@ -114,11 +119,47 @@ func TestFollowedTagsUI_TappingRefreshButtonRepopulatesTags(t *testing.T) {
 		}
 	}))
 	defer serv.Close()
-	ma.prefs = NewPreferences(a)
-	err := ma.prefs.MastodonServer.Set(serv.URL)
+	err = ma.prefs.MastodonServer.Set(serv.URL)
 	assert.NoError(t, err)
 	test.Tap(ma.refreshButton)
 
 	assert.Equal(t, 1, ma.listChoices.LeftList.Length(), "After refresh, expecting 1 item, got %d", ma.listChoices.LeftList.Length())
 	assert.Equal(t, 0, ma.listChoices.RightList.Length(), "After refresh, expecting 0 items, got %d", ma.listChoices.RightList.Length())
+}
+
+func Test_MakeFollowedTagsUI_SetsServerTextFromCurrentServer(t *testing.T) {
+	type fields struct {
+		server string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name:   "Proper server URL",
+			fields: fields{server: "https://myserver.com"},
+			want:   "https://myserver.com",
+		},
+		{
+			name: "Empty server URL",
+			want: "Not logged in",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := test.NewApp()
+			w := a.NewWindow("")
+			p := NewPreferences(a)
+			err := p.MastodonServer.Set(tt.fields.server)
+			assert.NoError(t, err)
+
+			ma := &myApp{prefs: p, app: a, window: w}
+			ui := ma.MakeFollowedTagsUI()
+			w.SetContent(ui)
+			// Give a moment for DataListener callback to kick in
+			time.Sleep(time.Millisecond * 5)
+			assert.Equal(t, tt.want, ma.serverText.Text)
+		})
+	}
 }

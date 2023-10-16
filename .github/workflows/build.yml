@@ -79,38 +79,3 @@ jobs:
       # - os: ios
       #   args: -app-id calc.sha${{ github.sha }}
       #   host: macos-latest
-
-  #   - name: Cache build artifacts
-  #     uses: actions/cache@v3
-  #     with:
-  #       path: |
-  #         ~/go/pkg/mod
-  #         ~/.cache/go-build
-  #         ~/.cache/fyne-cross
-  #       key: ${{ runner.os }}-build-cache-${{ hashFiles('**/go.sum') }}
-
-  #   - name: Install Fyne-cross
-  #     # working-directory: fyne-cross
-  #     run: go install github.com/fyne-io/fyne-cross@latest
-
-  #     # attempt to use "go install" but fallback to "go get"
-  #   #   - name: Install Fyne
-  #   #     run: |
-  #   #       go install fyne.io/fyne/v2/cmd/fyne@latest ||
-  #   #       go get fyne.io/fyne/v2/cmd/fyne@latest
-
-  #   #   - name: Install Podman
-  #   #     if: ${{ runner.os == 'macos' }}
-  #   #     run: |
-  #   #       brew install podman
-  #   #       podman machine init
-  #   #       podman machine start
-
-  #   - name: Build
-  #     # working-directory: calculator
-  #     run: |
-  #       fyne-cross \
-  #         ${{ matrix.target.os }} \
-  #         ${{ matrix.target.args }} \
-  #         -name mastotool${{ matrix.target.ext }} \
-  #         -app-id com.github.PaulWaldo.mastotool
