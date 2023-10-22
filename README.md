@@ -39,3 +39,10 @@ You may also download binaries at [Releases · PaulWaldo/mastotool](https://gith
 
 1. Optionally tap the _Refresh_ button to reload the list of followed tags from the
    server and reset your removal selection.
+
+## Mea culpa
+
+In an unfortunate turn of events, it turns out the the name `mastotool` is already taken
+by <https://github.com/muesli/mastotool>. While both applications work in the same general
+space, they should not be construed to have any relationship to each other.
+If this becomes a problem, I'll be happy to rename my tool.  Appologies [muesli](https://github.com/muesli)!
